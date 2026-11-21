@@ -27,6 +27,7 @@ style:
     # Tunable thresholds must live in a named config object (see docs/agent/BEST_PRACTICES.md).
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
+    ignoreEnums: true
     ignoreAnnotated: ['Composable', 'Preview']
     excludes: ['**/test/**', '**/androidTest/**']
   UnusedPrivateMember:

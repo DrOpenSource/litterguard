@@ -27,15 +27,15 @@ Update the **Done** column when ticking boxes.
 
 | Phase | Goal | Done / Total | Status | Exit gate |
 | --- | --- | --- | --- | --- |
-| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 4 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
-| [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 0 / 15 | ⚪ Not started | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
+| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 7 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
+| [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 3 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
 | [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
 | [P4](#phase-4--reliability-and-device-hardening) | Thermal, kiosk, recovery, endurance | 0 / 14 | ⚪ | J5, J6, J7 pass on the G54 |
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
 | [P6](#phase-6--custom-models-and-tuning) | Fine-tuned models, plate OCR A/B, tuning | 0 / 10 | ⚪ | Custom detector beats stock on field validation set |
 | [P7](#phase-7--field-validation-and-mvp-release) | Full journeys at the site, pilot, v1.0 release | 0 / 6 | ⚪ | PRD §12 exit criteria met → tag `v1.0.0` |
-| **Total** | | **4 / 91** | | |
+| **Total** | | **10 / 91** | | |
 
 ## Tracks and critical path
 
@@ -63,8 +63,8 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 - [x] **P0.4** Official agent skills reviewed and vendored into `.claude/skills/` (CameraX, LiteRT runtime, CompiledModel scaffolding, on-device verification), pinned to a commit. · S
 - [x] **P0.5** License exception: standard FSF wording kept, copyright line "© 2026 LitterGuard contributors" in the README. Owner informed. Revisit with a lawyer before any partnership or commercial deployment. · S
 - [x] **P0.6** The owner created the public repo [DrOpenSource/litterguard](https://github.com/DrOpenSource/litterguard); the agent pushed `main`. Branch protection (CI required) is set after the first green CI run (P0.7). · S
-- [ ] **P0.7** CI: a GitHub Actions workflow runs the full gate with `-PwarningsAsErrors=true` on PRs and `main`. It uses Gradle and Android SDK caches, installs `platforms;android-37.2`, and uploads build reports when a run fails. Once a run is green, `main` requires the `gate` check. · S · after: P0.6
-  - Done when: a PR shows a green required check.
+- [x] **P0.7** CI: a GitHub Actions workflow runs the full gate with `-PwarningsAsErrors=true` on PRs and `main`. It uses Gradle and Android SDK caches, installs `platforms;android-37.2`, and uploads build reports when a run fails. Once a run is green, `main` requires the `gate` check. · S · after: P0.6
+  - Done when: a PR shows a green required check. ✔ first run green 2026-11-21 ([run](https://github.com/DrOpenSource/litterguard/actions/runs/44905003545)); `main` is protected (PR + `gate` required, linear history, no force-push).
 - [ ] **P0.8** Moto G54 baseline. **Owner:** OWNER_GUIDE **Task A** (About-phone screenshot, switch on USB debugging, plug in). **Agent, over adb:** the full checklist in [moto-g54.md](../devices/moto-g54.md), including `benchmark_model` for stock YOLO11n INT8 at 320/416/640 on CPU (2 and 4 threads) and on GPU, the camera high-res-mode probe, and `getThermalHeadroom` behaviour. · M
   - Done when: results are in LEARNINGS (`[device:moto-g54]`) and the **detector input size + accelerator** decision is appended to ADR-0003.
 - [ ] **P0.9** `[human]` Record the deterrent audio (OWNER_GUIDE **Task C**; the agent copies the files over adb and normalises the loudness):
@@ -81,13 +81,13 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 **Goal:** every *decision* in the product is implemented and proven in pure Kotlin before any camera code exists (ADR-0001/0002).
 **Exit:** all P1.13 scenarios pass in `./gradlew :core:domain:test`; domain line coverage ≥ 90%; the full gate is green.
 
-- [ ] **P1.1** Value types in `:core:model`. Covers `FR-2.4`. · S
-  - Types: `NormalizedPoint`, `BoundingBox` (IoU, area, bottom-centre), `Polygon`, `ObjectCategory` (PERSON, VEHICLE, ANIMAL, OTHER), `Detection`, `TrackId`, `IncidentId`, `ImageBuffer`, `LumaPlane`, `PlateRead`, `Incident`, `EvidenceRef`.
-  - Done when: unit tests for IoU, area and bottom-centre pass.
-- [ ] **P1.2** `DetectionConfig` with every PRD §6.4 parameter (units documented in KDoc), Low/Normal/High presets, and range validation. · S · after: P1.1
-- [ ] **P1.3** ROI geometry. Covers `FR-1.2 FR-1.3 FR-2.4`. · S · after: P1.1
+- [x] **P1.1** Value types in `:core:model`. Covers `FR-2.4`. · S
+  - Types: `NormalizedPoint`, `BoundingBox` (IoU, area, bottom-centre), `Polygon`, `ObjectCategory` (PERSON, VEHICLE, ANIMAL, OTHER), `Detection`, `TrackId`, `IncidentId`, `MonotonicTime`, `ImageBuffer`, `LumaPlane`. (`PlateRead` moves to P1.9; `Incident` and `EvidenceRef` move to P1.7, next to the logic that defines them.)
+  - Done when: unit tests for IoU, area and bottom-centre pass. ✔ 17 tests, 2026-11-21
+- [x] **P1.2** `DetectionConfig` with every PRD §6.4 parameter (units documented in KDoc), Low/Normal/High presets, and range validation. · S · after: P1.1 ✔ 8 tests, including "every preset meets the 8 s J2 latency budget"
+- [x] **P1.3** ROI geometry. Covers `FR-1.2 FR-1.3 FR-2.4`. · S · after: P1.1
   - Scope: point-in-polygon (edge counts as inside), self-intersection check, polygon bounds, normalised↔pixel mapping with rotation, and the ROI-crop rectangle with margin.
-  - Done when: table-driven tests pass, covering concave, degenerate and edge cases.
+  - Done when: table-driven tests pass, covering concave, degenerate and edge cases. ✔ 36 tests, 2026-11-21
 - [ ] **P1.4** `MotionGate`: downscale the ROI luma, per-pixel diff threshold, changed-fraction score. Covers `FR-2.2`. · S · after: P1.3
 - [ ] **P1.5** `Tracker`. Covers `FR-2.5`. · M · after: P1.1
   - Scope: IoU association with a centroid fallback, enter/exit hysteresis, in-ROI test by bottom-centre, a per-track static-duration counter, and class smoothing.
