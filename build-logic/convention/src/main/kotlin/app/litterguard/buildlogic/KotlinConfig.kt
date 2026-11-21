@@ -17,10 +17,9 @@ internal fun Project.configureKotlinCompiler() {
         compilerOptions {
             jvmTarget.set(JvmTarget.fromTarget(libs.version("jvmTarget")))
             allWarningsAsErrors.set(warningsAsErrors)
-            freeCompilerArgs.addAll(
-                "-Xjsr305=strict",
-                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            )
+            // Opt-ins (e.g. ExperimentalCoroutinesApi) are declared per use site, not globally: a global opt-in for a
+            // library a module doesn't depend on is a compiler warning, which fails CI's warnings-as-errors mode.
+            freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
 }
