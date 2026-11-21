@@ -29,8 +29,8 @@ jobs:
       - name: Install export toolchain
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0 torchvision==0.29.2
-          python -m pip install -r ml/requirements-export.txt
+          python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r ml/requirements-export.txt
+          python -c "import torch, litert_torch; print('torch', torch.__version__)"
 
       - name: Export YOLO11n (FP32 + INT8) at 320/416/640
         working-directory: ml

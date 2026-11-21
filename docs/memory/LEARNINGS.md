@@ -63,6 +63,14 @@
 - **Resolution:** long thermal and soak runs (J5) must use the wall charger. Battery drain during dev sessions over a PC USB port is expected.
 - **Status:** active
 
+### [ml] Ultralytics LiteRT export: Linux/macOS only, and litert-torch must be preinstalled
+- **Observed:** 2026-11-21, Ultralytics 8.4.216. `format="tflite"` is deprecated and now redirects to `format="litert"` (litert-torch). The output is FP32 NCHW `[1,3,S,S]`. The quantised file is `<stem>_int8.tflite` (static INT8, float I/O, float head); there is no FP16 variant.
+- **Evidence:**
+  - On Windows: `AssertionError: LiteRT export only supported on Linux x86 and macOS`.
+  - In CI, when Ultralytics auto-installed `litert-torch 0.10.0` mid-export, it downgraded torch 2.15 to 2.14.1 inside a running process, and the import failed with `duplicate registrations for aten.miopen_batch_norm.default`.
+- **Resolution:** export in CI (`ml-export-bench.yml`). Install `ml/requirements-export.txt` (ultralytics + litert-torch + ai-edge-quantizer pinned) in one pip call, before exporting.
+- **Status:** active
+
 ### [tooling] Auto-mode permission blocks pushing downloaded binaries to the phone
 - **Observed:** 2026-11-21. Pushing and running the prebuilt `android_aarch64_benchmark_model` (TF nightly bucket) over adb was denied by the agent permission classifier.
 - **Resolution:** measure model latency with our own instrumented benchmark built from pinned Maven LiteRT (`:core:ml` androidTest). It is also closer to production, because it uses the CompiledModel API rather than the legacy delegate. Alternatively, the owner can allow the action explicitly.
