@@ -63,6 +63,22 @@
 - **Resolution:** long thermal and soak runs (J5) must use the wall charger. Battery drain during dev sessions over a PC USB port is expected.
 - **Status:** active
 
+### [device:moto-g54][litert] Detector benchmark: CPU INT8 (4 threads) is fastest; GPU is fully resident; NPU unusable
+- **Observed:** 2026-11-21, `DetectorBenchmarkTest` on the owner's G54, LiteRT 2.4.0, stock YOLO11n.
+- **Evidence (p50):**
+  - 416 px: INT8 CPU-4T 32 ms; FP32 GPU 58 ms; INT8 GPU 55 ms.
+  - 640 px: FP32 GPU 110 ms; INT8 CPU-4T 94 ms.
+  - The GPU runs all nodes (`355/355`, `385/385` LITERT_CL, one partition); its first load takes 0.5–2.7 s.
+  - CPU-2T is always slower than 4T.
+  - `Accelerator.NPU` gives "Failed to compile model".
+- **Resolution:** ADR-0003 addendum: 416 px, CPU-INT8-4T primary, GPU-FP32 alternate, no NPU. INT8 on the GPU is pointless.
+- **Status:** active. Revisit after the J5 thermal soak and the P6 INT8 accuracy check.
+
+### [litert] litert-api's manifest adds FOREGROUND_SERVICE + FOREGROUND_SERVICE_DATA_SYNC permissions
+- **Observed:** 2026-11-21, `litert-api-2.4.0.aar` AndroidManifest (used for AI Pack downloads).
+- **Resolution:** our app uses a `camera` FGS only. In P2.12, strip the extra one with `tools:node="remove"` on `FOREGROUND_SERVICE_DATA_SYNC`, so Play's FGS declaration stays truthful. Verify in the merged manifest.
+- **Status:** active
+
 ### [ml] Ultralytics LiteRT export: Linux/macOS only, and litert-torch must be preinstalled
 - **Observed:** 2026-11-21, Ultralytics 8.4.216. `format="tflite"` is deprecated and now redirects to `format="litert"` (litert-torch). The output is FP32 NCHW `[1,3,S,S]`. The quantised file is `<stem>_int8.tflite` (static INT8, float I/O, float head); there is no FP16 variant.
 - **Evidence:**

@@ -56,9 +56,14 @@ Mount the phone within those distances of the vehicle stopping point (OWNER_GUID
   - The headroom thresholds are `[NaN×4, 1.17, 1.33, 1.5]`, so headroom 1.0 means SEVERE.
   - **Consequence: the status listener jumps from NONE straight to SEVERE, so a status-only policy would never use the 2 FPS tier.** FR-8.4 now uses `getThermalHeadroom()` for the early tiers.
   - Idle on USB: CPU 44 °C, skin 39 °C, battery 33 °C.
-  - We can't read `getThermalHeadroom()` from the shell. It is checked from the app in P2.
+  - We can't read `getThermalHeadroom()` from the shell. It is checked from the app in P2.6.
 - Power: the laptop USB port supplies only **500 mA** (`Max charging current: 500000`). Field runs need the wall charger.
-- [ ] `benchmark_model` for stock YOLO11n INT8 at 320/416/640 on CPU (2 and 4 threads) and on GPU: p50/p90 latency, peak memory
-- [ ] 30-minute idle camera run at 3 FPS analysis: device temperature and thermal status trend
-- [ ] Battery/background: Motorola battery-optimisation settings path; whether the app survives 1 h with the screen dimmed (kiosk)
-- [ ] Record the results in `docs/memory/LEARNINGS.md` with tag `[device:moto-g54]`
+- [x] Detector latency: stock YOLO11n FP32/INT8 at 320/416/640 on CPU (2 and 4 threads), strict GPU, and NPU, measured with `DetectorBenchmarkTest` (CompiledModel API).
+  - The legacy `benchmark_model` binary was not used; see LEARNINGS [tooling].
+  - Full table: ADR-0003 addendum.
+  - Headline: **INT8 416 on CPU-4T has p50 32 ms; FP32 416 on GPU has p50 58 ms** (all nodes on the GPU). The NPU fails to compile.
+  - Native heap per model: 10–45 MB on CPU, 18–92 MB on GPU.
+  - Aside: the stock Moto camera app also runs LiteRT CompiledModel on the GPU (`fullyAccelerated=true` in logcat), which is further evidence that the GPU path is healthy on this unit.
+- [ ] 30-minute camera run at 3 FPS analysis: device temperature and thermal-headroom trend. Moved to P2.4/P2.6, because it needs the app.
+- [ ] Battery/background: Motorola battery-optimisation settings path; whether the app survives 1 h with the screen dimmed (kiosk). Moved to P4.7.
+- [x] Record the results in `docs/memory/LEARNINGS.md` with tag `[device:moto-g54]`

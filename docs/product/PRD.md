@@ -293,7 +293,7 @@ Evidence files go in app-private storage (`filesDir/evidence/<incidentId>/`). No
 | Language / UI | Kotlin + Jetpack Compose (Material 3) | Kotlin 2.4.21, Compose BOM 2026.11.01 | AGP 9 built-in Kotlin |
 | Build | Gradle + AGP, convention plugins, version catalog | Gradle 9.9.2, AGP 9.5.2 | `build-logic/` |
 | Camera | CameraX `ImageAnalysis` + `ImageCapture` + `camera-compose` | 1.7.0 | |
-| ML runtime | LiteRT CompiledModel API, bundled `litert` + `litert-gpu` (GPU → CPU fallback) | 2.4.0 | ADR-0004; not the legacy `Interpreter` |
+| ML runtime | LiteRT CompiledModel API, bundled `litert` + `litert-gpu` (per-model ordered accelerators; G54 detector: CPU INT8 → GPU FP32) | 2.4.0 | ADR-0004; not the legacy `Interpreter` |
 | Detector | Ultralytics YOLO11n INT8 (stock COCO, then fine-tuned); YOLO26n candidate | — | ADR-0003; behind an `ObjectDetector` port |
 | Plate OCR | ML Kit Text Recognition v2, bundled Latin | 16.0.1 | fast-plate-ocr is the A/B candidate |
 | Persistence | Room + DataStore + app-private files | Room 2.8.5, DataStore 1.3.0 | |
@@ -405,3 +405,4 @@ The MVP passes when J1–J7 all pass on the **Moto G54** reference device (a sec
 10. The **detector license** is flagged as a decision (Ultralytics weights are AGPL-3.0).
 11. Every dependency version is pinned and validated; LiteRT **CompiledModel** API instead of the legacy Interpreter.
 12. Decisions D1–D3 recorded: AGPL-3.0 open source, pre-warning off for J3, Moto G54 as the reference device. Model weights are downloaded at build time, not committed (ADR-0004).
+13. P0.8 device baseline (2026-11-21): FR-8.4 drives the early FPS tiers from thermal **headroom**, because the G54's HAL jumps NONE → SEVERE. The G54 gives apps at most 12.6 MP (HFOV ≈ 61°), so plate range is about 22 m for cars and 12 m for two-wheelers. Detector: 416 px, CPU INT8 (ADR-0003 addendum).

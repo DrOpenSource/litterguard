@@ -27,7 +27,7 @@ Update the **Done** column when ticking boxes.
 
 | Phase | Goal | Done / Total | Status | Exit gate |
 | --- | --- | --- | --- | --- |
-| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 7 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
+| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 8 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
 | [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 3 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
 | [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
@@ -35,7 +35,7 @@ Update the **Done** column when ticking boxes.
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
 | [P6](#phase-6--custom-models-and-tuning) | Fine-tuned models, plate OCR A/B, tuning | 0 / 10 | ⚪ | Custom detector beats stock on field validation set |
 | [P7](#phase-7--field-validation-and-mvp-release) | Full journeys at the site, pilot, v1.0 release | 0 / 6 | ⚪ | PRD §12 exit criteria met → tag `v1.0.0` |
-| **Total** | | **10 / 91** | | |
+| **Total** | | **11 / 91** | | |
 
 ## Tracks and critical path
 
@@ -65,8 +65,8 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 - [x] **P0.6** The owner created the public repo [DrOpenSource/litterguard](https://github.com/DrOpenSource/litterguard); the agent pushed `main`. Branch protection (CI required) is set after the first green CI run (P0.7). · S
 - [x] **P0.7** CI: a GitHub Actions workflow runs the full gate with `-PwarningsAsErrors=true` on PRs and `main`. It uses Gradle and Android SDK caches, installs `platforms;android-37.2`, and uploads build reports when a run fails. Once a run is green, `main` requires the `gate` check. · S · after: P0.6
   - Done when: a PR shows a green required check. ✔ first run green 2026-11-21 ([run](https://github.com/DrOpenSource/litterguard/actions/runs/44905003545)); `main` is protected (PR + `gate` required, linear history, no force-push).
-- [ ] **P0.8** Moto G54 baseline. **Owner:** OWNER_GUIDE **Task A** (About-phone screenshot, switch on USB debugging, plug in). **Agent, over adb:** the full checklist in [moto-g54.md](../devices/moto-g54.md), including `benchmark_model` for stock YOLO11n INT8 at 320/416/640 on CPU (2 and 4 threads) and on GPU, the camera high-res-mode probe, and `getThermalHeadroom` behaviour. · M
-  - Done when: results are in LEARNINGS (`[device:moto-g54]`) and the **detector input size + accelerator** decision is appended to ADR-0003.
+- [x] **P0.8** Moto G54 baseline. **Owner:** OWNER_GUIDE **Task A** (About-phone screenshot, switch on USB debugging, plug in). **Agent, over adb:** the full checklist in [moto-g54.md](../devices/moto-g54.md), including `benchmark_model` for stock YOLO11n INT8 at 320/416/640 on CPU (2 and 4 threads) and on GPU, the camera high-res-mode probe, and `getThermalHeadroom` behaviour. · M
+  - Done when: results are in LEARNINGS (`[device:moto-g54]`) and the **detector input size + accelerator** decision is appended to ADR-0003. ✔ 2026-11-21: the decision is 416 px, CPU INT8 with 4 threads (p50 32 ms), with GPU FP32 as the alternate (58 ms) and no NPU. The legacy `benchmark_model` binary was replaced by `DetectorBenchmarkTest` (CompiledModel API). Still open, moved to the app phases: `getThermalHeadroom()` value (P2.6), 30-minute camera soak (P2.4), Motorola battery settings (P4.7).
 - [ ] **P0.9** `[human]` Record the deterrent audio (OWNER_GUIDE **Task C**; the agent copies the files over adb and normalises the loudness):
   - a warning clip (EN then Kannada, ≤ 6 s);
   - a pre-warning clip (for later A/B);
@@ -124,7 +124,7 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
   - Done when: a clean checkout builds with the model fetched and verified.
 - [ ] **P2.2** `[ml]` Export stock YOLO11n (COCO) to LiteRT INT8 at the P0.8 input size. Calibrate on viewpoint frames from P0.11 (or a COCO subset until those exist), publish as a Release asset, and add the `models.json` entry with real tensor shapes. · S · after: P0.8
 - [ ] **P2.3** `LiteRtObjectDetector`. Covers `FR-2.3 FR-2.7`. · M · after: P2.1, P2.2, P1.10
-  - Scope: a dedicated thread, a shared `Environment`, GPU → CPU fallback with the actual accelerator logged, warm-up, letterbox preprocessing per `models.json` layout, a `[1, 84, N]` decoder plus class-wise NMS as pure JVM-tested functions, and the COCO → `ObjectCategory` mapping.
+  - Scope: a dedicated thread, a shared `Environment`, the ordered accelerator list from `models.json` (G54: CPU-INT8 4T → GPU-FP32 → CPU-FP32, ADR-0003 addendum) with the actual accelerator logged, warm-up, letterbox preprocessing per `models.json` layout, a `[1, 84, N]` decoder plus class-wise NMS as pure JVM-tested functions, and the COCO → `ObjectCategory` mapping.
   - Done when: an instrumented golden test (shapes + fixture image) passes on the G54.
 - [ ] **P2.4** CameraX `FrameSource`. Covers `FR-2.1`. · M · after: P1.10
   - Scope: RGBA_8888 at 1280×720 via `ResolutionSelector`, `KEEP_ONLY_LATEST`, a timestamp throttle driven by `PipelineConfig`, rotation, pooled `ImageBuffer` + `LumaPlane`, and a `close()` on every path.
