@@ -1,0 +1,44 @@
+# Gradle / build
+.gradle/
+build/
+.kotlin/
+local.properties
+captures/
+*.apk
+*.aab
+*.ap_
+
+# IDE
+.idea/
+!.idea/codeStyles/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Secrets — never commit (Telegram bot tokens, keystores, service creds)
+secrets.properties
+*.jks
+*.keystore
+google-services.json
+.env
+.env.*
+
+# ML workspace: large artifacts live outside git (see ml/README.md)
+ml/.venv/
+ml/datasets/
+ml/runs/
+ml/weights/
+*.pt
+*.onnx
+__pycache__/
+*.ipynb_checkpoints
+
+# Models are downloaded at build time and sha256-verified (ADR-0004); never commit them.
+*.tflite
+
+# Field-test evidence (contains personal data: plates, people). Never commit.
+field-data/
+
+# Claude Code local settings
+.claude/settings.local.json

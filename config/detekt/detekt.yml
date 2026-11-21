@@ -1,0 +1,46 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true).
+# Formatting is owned by Spotless/ktlint, so detekt's formatting rules stay off.
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 10
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    ignorePrivate: true
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9_]*'
+
+style:
+  MagicNumber:
+    # Tunable thresholds must live in a named config object (see docs/agent/BEST_PRACTICES.md).
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Composable', 'Preview']
+    excludes: ['**/test/**', '**/androidTest/**']
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    active: false
+  WildcardImport:
+    active: true
+    excludeImports: []
+
+exceptions:
+  # Swallowed coroutine cancellation is a real bug class in camera/ML loops.
+  InstanceOfCheckForException:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames: ['Exception', 'Throwable', 'RuntimeException']
