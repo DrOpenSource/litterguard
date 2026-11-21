@@ -1,0 +1,9 @@
+# Pinned toolchain for exporting stock / trained models to LiteRT (see ml/scripts/).
+# Install everything in ONE pip call, with the CPU wheel index as an extra index:
+#   pip install --extra-index-url https://download.pytorch.org/whl/cpu -r ml/requirements-export.txt
+# litert-torch pins its own torch version. If Ultralytics auto-installs it during an export instead, torch is
+# swapped mid-process and the import fails ("duplicate registrations for aten.miopen_batch_norm"). See LEARNINGS [ml].
+# Full training requirements are pinned in P6.1.
+ultralytics==8.4.216
+litert-torch==0.10.0
+ai-edge-quantizer==0.10.1

@@ -44,4 +44,50 @@
 - **Observed:** 2026-11-21, GSMArena / Wikipedia / Beebom.
 - **Evidence:** Dimensity 7020 (2x A78 + 6x A55), IMG BXM-8-256 GPU, 50 MP f/1.8 OIS main camera, no telephoto, shipped with Android 13 (last major update reportedly 15).
 - **Resolution:** benchmark 2 vs 4 CPU threads and GPU (P0.8). Plate range depends on the 50 MP capture mode (docs/devices/moto-g54.md).
-- **Status:** active, needs device verification
+- **Status:** superseded by the measured entries below (camera, thermal). Big cores confirmed as cpu6–7 @ 2.2 GHz.
+
+### [device:moto-g54][camera] Apps get only 12.6 MP from the "50 MP" camera; HFOV is 61°, not 80°
+- **Observed:** 2026-11-21, `adb shell dumpsys media.camera` on the owner's unit (Android 15).
+- **Evidence:** camera 0 active array 4096×3072. No `ULTRA_HIGH_RESOLUTION_SENSOR` capability, no `*MaximumResolution` configs. Largest JPEG/YUV is 4096×3072. Focal 4.27 mm / sensor width 5.00 mm gives HFOV ≈ 61°. No `availableStreamUseCases`. OIS is available. Zoom 1–8× is digital.
+- **Resolution:** plate captures use 4096×3072 stills. The narrower FOV makes this ~87 px across a car plate at 20 m, so the OCR range is about 22 m for cars and 12 m for two-wheelers (moto-g54.md). Don't build a 50 MP code path, and don't set `StreamUseCase`.
+- **Status:** active
+
+### [device:moto-g54][thermal] Thermal status jumps NONE → SEVERE; LIGHT/MODERATE thresholds are NaN
+- **Observed:** 2026-11-21, `adb shell dumpsys thermalservice`.
+- **Evidence:** the CPU/GPU/NPU hot thresholds are `[NaN, NaN, NaN, 85, 90, 100, 117]` °C. Skin is `[…, 80, 85, 90, 95]`. Headroom thresholds are `[NaN×4, 1.17, 1.33, 1.5]`.
+- **Resolution:** FR-8.4 now drives the early FPS tiers from `getThermalHeadroom(10)`, falling back to status-only if it returns NaN. The headroom value itself is still to be confirmed from the app (P2).
+- **Status:** active
+
+### [device:moto-g54][power] Laptop USB supplies only 500 mA
+- **Observed:** 2026-11-21, `dumpsys battery` while connected to the dev PC (`Max charging current: 500000`).
+- **Resolution:** long thermal and soak runs (J5) must use the wall charger. Battery drain during dev sessions over a PC USB port is expected.
+- **Status:** active
+
+### [device:moto-g54][litert] Detector benchmark: CPU INT8 (4 threads) is fastest; GPU is fully resident; NPU unusable
+- **Observed:** 2026-11-21, `DetectorBenchmarkTest` on the owner's G54, LiteRT 2.4.0, stock YOLO11n.
+- **Evidence (p50):**
+  - 416 px: INT8 CPU-4T 32 ms; FP32 GPU 58 ms; INT8 GPU 55 ms.
+  - 640 px: FP32 GPU 110 ms; INT8 CPU-4T 94 ms.
+  - The GPU runs all nodes (`355/355`, `385/385` LITERT_CL, one partition); its first load takes 0.5–2.7 s.
+  - CPU-2T is always slower than 4T.
+  - `Accelerator.NPU` gives "Failed to compile model".
+- **Resolution:** ADR-0003 addendum: 416 px, CPU-INT8-4T primary, GPU-FP32 alternate, no NPU. INT8 on the GPU is pointless.
+- **Status:** active. Revisit after the J5 thermal soak and the P6 INT8 accuracy check.
+
+### [litert] litert-api's manifest adds FOREGROUND_SERVICE + FOREGROUND_SERVICE_DATA_SYNC permissions
+- **Observed:** 2026-11-21, `litert-api-2.4.0.aar` AndroidManifest (used for AI Pack downloads).
+- **Resolution:** our app uses a `camera` FGS only. In P2.12, strip the extra one with `tools:node="remove"` on `FOREGROUND_SERVICE_DATA_SYNC`, so Play's FGS declaration stays truthful. Verify in the merged manifest.
+- **Status:** active
+
+### [ml] Ultralytics LiteRT export: Linux/macOS only, and litert-torch must be preinstalled
+- **Observed:** 2026-11-21, Ultralytics 8.4.216. `format="tflite"` is deprecated and now redirects to `format="litert"` (litert-torch). The output is FP32 NCHW `[1,3,S,S]`. The quantised file is `<stem>_int8.tflite` (static INT8, float I/O, float head); there is no FP16 variant.
+- **Evidence:**
+  - On Windows: `AssertionError: LiteRT export only supported on Linux x86 and macOS`.
+  - In CI, when Ultralytics auto-installed `litert-torch 0.10.0` mid-export, it downgraded torch 2.15 to 2.14.1 inside a running process, and the import failed with `duplicate registrations for aten.miopen_batch_norm.default`.
+- **Resolution:** export in CI (`ml-export-bench.yml`). Install `ml/requirements-export.txt` (ultralytics + litert-torch + ai-edge-quantizer pinned) in one pip call, before exporting.
+- **Status:** active
+
+### [tooling] Auto-mode permission blocks pushing downloaded binaries to the phone
+- **Observed:** 2026-11-21. Pushing and running the prebuilt `android_aarch64_benchmark_model` (TF nightly bucket) over adb was denied by the agent permission classifier.
+- **Resolution:** measure model latency with our own instrumented benchmark built from pinned Maven LiteRT (`:core:ml` androidTest). It is also closer to production, because it uses the CompiledModel API rather than the legacy delegate. Alternatively, the owner can allow the action explicitly.
+- **Status:** active

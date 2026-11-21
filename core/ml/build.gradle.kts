@@ -16,4 +16,8 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.timber)
+
+    // On-device latency benchmark (P0.8); models are supplied locally, never committed.
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }
