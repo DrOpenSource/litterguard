@@ -158,7 +158,7 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 
 - [ ] **P3.1** Evidence buffer wiring: copy top-K frames per vehicle track out of the pool, enforce a memory cap, and discard them on expiry. Covers `FR-5.1`. · S · after: P2.6, P1.8
 - [ ] **P3.2** Speculative high-res `ImageCapture`. Covers `FR-5.2 FR-5.3`. · M · after: P3.1
-  - Scope: probe for the highest-resolution mode the G54 exposes (50 MP if available); `MINIMIZE_LATENCY`; at most 2 captures per track; rate-limited so analysis stays ≥ 2 FPS; plus a scene capture on confirmation.
+  - Scope: use the highest-resolution still the G54 exposes (measured in P0.8: 4096×3072; no 50 MP mode for apps); `MINIMIZE_LATENCY`; at most 2 captures per track; rate-limited so analysis stays ≥ 2 FPS; plus a scene capture on confirmation.
 - [ ] **P3.3** Zoom: a CameraX linear-zoom slider in setup, persisted, with the ROI drawn after zoom. Covers `FR-1.7`. · S · after: P2.10
 - [ ] **P3.4** `[ml]` Plate detector. · L
   - Scope: assemble Indian plate data (IEEE DataPort LPR, Indian plates in the wild, Mendeley IURS; record licences in `ml/configs/SOURCES.md`); train single-class YOLO11n-plate; export LiteRT INT8; write an mAP report in `ml/eval/`.

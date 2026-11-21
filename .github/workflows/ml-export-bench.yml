@@ -1,0 +1,50 @@
+# Exports stock YOLO11n to LiteRT at 320/416/640 for the on-device benchmark (P0.8).
+# Ultralytics' LiteRT exporter runs only on Linux x86-64 / macOS, so Windows dev machines use this job and then
+# `gh run download`. The .tflite files are a workflow artifact only: never committed (AGENTS.md hard rule 8).
+name: ML export (benchmark models)
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - ml/scripts/export_bench_models.py
+      - ml/requirements-export.txt
+      - .github/workflows/ml-export-bench.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install export toolchain
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0 torchvision==0.29.2
+          python -m pip install -r ml/requirements-export.txt
+
+      - name: Export YOLO11n (FP32 + INT8) at 320/416/640
+        working-directory: ml
+        run: |
+          mkdir -p weights
+          cd weights
+          python -I ../scripts/export_bench_models.py
+
+      - name: Record toolchain versions
+        run: python -m pip freeze | grep -iE "^(ultralytics|torch|litert|ai-edge|tensorflow)" | tee core/ml/src/androidTest/assets/bench/TOOLCHAIN.txt
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bench-models
+          path: core/ml/src/androidTest/assets/bench/
+          retention-days: 7
+          if-no-files-found: error

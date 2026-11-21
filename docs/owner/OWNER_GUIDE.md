@@ -18,7 +18,7 @@ You will **never** need to type commands, read code, or review technical changes
 1. Charge the phone above 50% and connect it to Wi-Fi.
 2. Open **Settings** → scroll to the bottom → **About phone**.
 3. **Take a screenshot** of this screen: press the **Power** and **Volume Down** buttons together. Send the screenshot to the assistant.
-4. On the same screen, find **Build number**. On Motorola phones it may be under **About phone → Software information**, or at the very bottom.
+4. On the same screen, find **Build number**. On the Moto G54 it is inside **About phone → Device identifiers** (on other Motorola phones it may be under **Software information**, or at the very bottom).
 5. **Tap "Build number" 7 times quickly.** The phone may ask for your screen-lock PIN; enter it. You'll see the message **"You are now a developer!"**
 6. Go back to **Settings → System → Developer options**.
 7. Find **USB debugging** and switch it **on**. Tap **OK** on the warning.
@@ -28,6 +28,13 @@ You will **never** need to type commands, read code, or review technical changes
 10. Tell the assistant **"phone connected"**. Leave the phone plugged in, with the screen on, while the assistant works (about 30–40 minutes).
 
 **Done looks like:** the assistant confirms it can see the phone.
+
+**If the assistant says it can't see the phone**, try these one at a time, and tell the assistant "tried again" after each:
+1. Unplug the cable and plug it into a **different USB port** on the computer (for example, one on the other side).
+2. Try **a different cable**, ideally the one that came in the Moto box. Many cables can charge but can't carry data.
+3. Check that the cable is pushed **all the way in** at both ends; gently blow out any dust in the phone's charging port.
+4. With the phone plugged in, swipe down from the top of the phone screen, tap the notification **"Charging this device via USB"**, and choose **"File transfer"**.
+5. Unlock the phone and look for the **"Allow USB debugging?"** box; it only appears while the screen is on.
 
 **To undo later (optional):** Settings → System → Developer options → switch **USB debugging** off.
 

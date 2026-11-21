@@ -44,4 +44,26 @@
 - **Observed:** 2026-11-21, GSMArena / Wikipedia / Beebom.
 - **Evidence:** Dimensity 7020 (2x A78 + 6x A55), IMG BXM-8-256 GPU, 50 MP f/1.8 OIS main camera, no telephoto, shipped with Android 13 (last major update reportedly 15).
 - **Resolution:** benchmark 2 vs 4 CPU threads and GPU (P0.8). Plate range depends on the 50 MP capture mode (docs/devices/moto-g54.md).
-- **Status:** active, needs device verification
+- **Status:** superseded by the measured entries below (camera, thermal). Big cores confirmed as cpu6–7 @ 2.2 GHz.
+
+### [device:moto-g54][camera] Apps get only 12.6 MP from the "50 MP" camera; HFOV is 61°, not 80°
+- **Observed:** 2026-11-21, `adb shell dumpsys media.camera` on the owner's unit (Android 15).
+- **Evidence:** camera 0 active array 4096×3072. No `ULTRA_HIGH_RESOLUTION_SENSOR` capability, no `*MaximumResolution` configs. Largest JPEG/YUV is 4096×3072. Focal 4.27 mm / sensor width 5.00 mm gives HFOV ≈ 61°. No `availableStreamUseCases`. OIS is available. Zoom 1–8× is digital.
+- **Resolution:** plate captures use 4096×3072 stills. The narrower FOV makes this ~87 px across a car plate at 20 m, so the OCR range is about 22 m for cars and 12 m for two-wheelers (moto-g54.md). Don't build a 50 MP code path, and don't set `StreamUseCase`.
+- **Status:** active
+
+### [device:moto-g54][thermal] Thermal status jumps NONE → SEVERE; LIGHT/MODERATE thresholds are NaN
+- **Observed:** 2026-11-21, `adb shell dumpsys thermalservice`.
+- **Evidence:** the CPU/GPU/NPU hot thresholds are `[NaN, NaN, NaN, 85, 90, 100, 117]` °C. Skin is `[…, 80, 85, 90, 95]`. Headroom thresholds are `[NaN×4, 1.17, 1.33, 1.5]`.
+- **Resolution:** FR-8.4 now drives the early FPS tiers from `getThermalHeadroom(10)`, falling back to status-only if it returns NaN. The headroom value itself is still to be confirmed from the app (P2).
+- **Status:** active
+
+### [device:moto-g54][power] Laptop USB supplies only 500 mA
+- **Observed:** 2026-11-21, `dumpsys battery` while connected to the dev PC (`Max charging current: 500000`).
+- **Resolution:** long thermal and soak runs (J5) must use the wall charger. Battery drain during dev sessions over a PC USB port is expected.
+- **Status:** active
+
+### [tooling] Auto-mode permission blocks pushing downloaded binaries to the phone
+- **Observed:** 2026-11-21. Pushing and running the prebuilt `android_aarch64_benchmark_model` (TF nightly bucket) over adb was denied by the agent permission classifier.
+- **Resolution:** measure model latency with our own instrumented benchmark built from pinned Maven LiteRT (`:core:ml` androidTest). It is also closer to production, because it uses the CompiledModel API rather than the legacy delegate. Alternatively, the owner can allow the action explicitly.
+- **Status:** active

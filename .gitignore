@@ -29,6 +29,8 @@ ml/.venv/
 ml/datasets/
 ml/runs/
 ml/weights/
+# Locally supplied benchmark models + toolchain notes (P0.8); never committed
+core/ml/src/androidTest/assets/bench/
 *.pt
 *.onnx
 __pycache__/
