@@ -16,10 +16,15 @@ Phase: **0 (8/12) and 1 (3/15) in parallel** · Repo: [DrOpenSource/litterguard]
 - Decided: D1 = AGPL-3.0, D2 = pre-warning off for J3, D3 = Moto G54. ADR-0003/0004 Accepted.
 - Known lint warnings (expected): `OldTargetApi` (targetSdk 36 is deliberate), `MissingApplicationIcon` (placeholder).
 
-## Next
-1. Owner: **Task B** (Telegram bot) next, then Task C (voice) and Task D (site visit). Ask for one at a time.
-2. Agent track: P1.4 MotionGate, P1.5 Tracker, P1.10 Ports + fakes (parallel), then P1.6 BaselineModel.
+## Next (resume here, next session 2026-11-22)
+1. Owner: **Task B** (Telegram bot). The owner already has the step-by-step instructions and said they'll do it on 2026-11-22. Wait for "Telegram done"; never ask for the token. Then ask for Task C (voice), then Task D (site visit), one at a time.
+2. Agent track: P1.4 MotionGate, P1.5 Tracker, P1.10 Ports + fakes (parallel; none started yet, no open branches), then P1.6 BaselineModel. One PR per slice; CI `gate` must pass before squash-merging.
 3. P2.2 can now proceed: the input size is decided (416).
+
+## Local dev-machine state (not in git)
+- `ml/.venv`: Python 3.12 with Ultralytics 8.4.216 + torch CPU. It can't export LiteRT on Windows; use the `ml-export-bench` workflow.
+- `core/ml/src/androidTest/assets/bench/`: 6 stock YOLO11n benchmark models (git-ignored). The CI artifact expires 7 days after 2026-11-21; re-run the workflow to get them again.
+- The G54 is authorised for adb on this PC ("Always allow").
 
 ## Open questions (need a human)
 - D4: custom vehicle classes (auto-rickshaw, goods carrier) in v1 or v2? Default: v2 (P6.2).
