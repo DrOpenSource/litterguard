@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Version | 1.1 (supersedes the v1.0 draft) |
-| Status | Draft v1.1: D1–D3 decided 2026-11-21; the remaining open decisions are in §14 |
-| Last updated | 2026-11-21 |
+| Status | Draft v1.1: D1–D3 decided 2026-11-21, D7 decided 2026-11-22; the remaining open decisions are in §14 |
+| Last updated | 2026-11-22 |
 | Scope | Single-Android-phone prototype that validates detection, deterrence and evidence capture |
 | Related | [ARCHITECTURE.md](../architecture/ARCHITECTURE.md) · [REPO_VALIDATION.md](../research/REPO_VALIDATION.md) · [ADRs](../decisions/) |
 
@@ -40,7 +40,7 @@ CCTV with a human watching it is expensive. Recorded CCTV only gets reviewed aft
 - Drawing a polygon ROI ("Dump Zone") and saving it.
 - On-device detection of people, vehicles and newly left objects inside the ROI.
 - A dumping state machine that confirms an *abandoned* object (see §6).
-- Instant deterrence: a bilingual audio warning (English + Kannada) and an optional torch pulse.
+- Instant deterrence: a recorded English audio warning and an optional torch pulse.
 - Evidence capture: a scene snapshot, frames of the actor/vehicle, a plate crop, and OCR text.
 - A local incident log (Room) with human review (Confirm / False alarm).
 - Alert delivery to a Telegram group, with a generic webhook (e.g. Supabase Edge Function) as an alternative.
@@ -84,7 +84,7 @@ Priority: **P0** = required for the MVP field test · **P1** = should have in th
 | FR-1.2 | The operator taps 4–12 points on the live preview to define the ROI polygon. Points can be dragged, undone and cleared. The polygon must not self-intersect. | P0 |
 | FR-1.3 | ROI coordinates are stored **normalised (0–1) to the analysis frame** so they survive changes of resolution or rotation, and they persist across restarts (DataStore). | P0 |
 | FR-1.4 | "Test Siren" plays the deterrent clip through the current audio route and shows which route it is (Bluetooth or phone speaker). | P0 |
-| FR-1.5 | Settings: site name, Telegram bot token (stored encrypted), with the **group chat detected automatically** after the operator sends `/start` in the group (no typing of chat IDs), "Send test alert", language order of the audio, quiet hours. | P0 |
+| FR-1.5 | Settings: site name, Telegram bot token (stored encrypted), with the **group chat detected automatically** after the operator sends `/start` in the group (no typing of chat IDs), "Send test alert", quiet hours. | P0 |
 | FR-1.6 | A sensitivity preset (Low / Normal / High) maps to the parameter table in §6.4; per-parameter overrides are available in Developer options. | P1 |
 | FR-1.7 | A camera-zoom slider (CameraX linear zoom) so a distant ROI fills more of the frame. | P1 |
 
@@ -116,7 +116,7 @@ Priority: **P0** = required for the MVP field test · **P1** = should have in th
 
 | ID | Requirement | Pri |
 | --- | --- | --- |
-| FR-4.1 | On confirmation, play the warning clip (English, then Kannada) through the active route at the configured volume, starting within 500 ms of confirmation. Example text: *"Illegal dumping detected. Your vehicle is being recorded."* | P0 |
+| FR-4.1 | On confirmation, play the recorded English warning clip through the active route at the configured volume, starting within 500 ms of confirmation. Example text: *"Attention. Illegal dumping detected. This area is under camera surveillance. Your vehicle is being recorded. Please take your waste back."* (the bundled clip is about 11 s; speech starts at 0 s) | P0 |
 | FR-4.2 | Audio focus is requested and volume is restored afterwards. The clip is bundled (offline), not TTS. | P0 |
 | FR-4.3 | Torch pulses 3 times, optionally. The torch is shared with the camera, so this uses `CameraControl.enableTorch` on the bound camera; the pulse must not interrupt analysis. | P1 |
 | FR-4.4 | Quiet hours (default 22:00–06:00): siren volume is capped or replaced by torch-only. This respects residential noise limits under the Noise Pollution (Regulation & Control) Rules, 2000. | P1 |
@@ -257,7 +257,7 @@ Hence FR-5.2 (high-res speculative capture) and FR-1.7 (zoom) are what make H3 a
 | Storage | ≤ 5 MB per incident; evidence purge per FR-6.5; warn when free space < 1 GB. |
 | Security | Bot token encrypted at rest (Android Keystore-backed AEAD via Tink); never logged; no secrets in the APK or git. `allowBackup=false`. HTTPS only. |
 | Privacy | See §9. No face recognition, no continuous recording, data minimisation. |
-| Localisation | UI in English; audio in English + Kannada. Strings externalised for Kannada/Hindi UI later. |
+| Localisation | UI and audio in English (D7). Strings externalised for Kannada/Hindi UI later. |
 | Accessibility | Setup flow touch targets ≥ 48 dp; contrast meets WCAG AA; works one-handed. |
 | Observability | On-device rolling log (Timber file tree, capped at 10 MB); a debug overlay showing boxes, track IDs, state, FPS, thermal status and accelerator. |
 | Compatibility | minSdk 29 (Android 10), so repurposed older phones work; targetSdk 36; compileSdk 37.2 (required by current AndroidX). |
@@ -390,6 +390,7 @@ The MVP passes when J1–J7 all pass on the **Moto G54** reference device (a sec
 | D4 | Custom vehicle classes (auto-rickshaw, goods carrier) in v1 or v2? | v2; map to COCO classes in v1 |
 | D5 | Telegram only, or Supabase from day one? | Telegram only (P0); webhook P2 |
 | D6 | Final applicationId / package (currently `app.litterguard`) | Change before the first external release |
+| D7 | Audio language(s) | ✅ **Decided 2026-11-22 by the owner: English only.** Kannada can be added later as an extra clip. The owner recorded the clips and agreed to publish them with the code |
 
 ## 15. Changes from v1.0
 
