@@ -97,3 +97,15 @@
 - **Evidence:** undelivered updates are kept for at most 24 hours, so the `/start` sent during Task B will be gone when the app is built. In privacy mode (the default) a bot in a group only gets commands addressed to it (`/start@LitterGuardBot`), replies to it, service messages, and a plain `/start` only if it was the last bot to post there. A `my_chat_member` update is always sent when the bot is added to a chat.
 - **Resolution:** P2.10 detects the group from a fresh action during in-app setup: open an "Add to group" deep link (`t.me/<bot>?startgroup=<nonce>`), then match the `my_chat_member` update or `/start@<bot> <nonce>`. Read the bot username from `getMe`; don't hard-code it. Don't call `deleteWebhook`/set webhooks.
 - **Status:** active. Verify when P2.10 is built.
+
+### [tooling] Git Bash rewrites `/sdcard/...` paths passed to adb
+- **Observed:** 2026-11-22. `adb pull /sdcard/Music/...` failed with "failed to stat remote object 'C:/Program Files/Git/sdcard/...'".
+- **Resolution:** prefix with `MSYS_NO_PATHCONV=1` (or use the PowerShell tool) for any adb command that takes a device path.
+- **Status:** active
+
+### [audio] Linear loudnorm can't reach −14 LUFS on raw phone speech under a −1.5 dBTP cap
+- **Observed:** 2026-11-22, Moto Recorder AAC files (44.1 kHz stereo, ~−16 LUFS, peaks +0.4 dBTP, about 1–1.5 s of leading digital silence).
+- **Evidence:** two-pass `loudnorm` with `linear=true` stopped at about −15.4 LUFS, because the true-peak cap limits the gain. With 3:1 compression first it reached −14.8 LUFS.
+- **Resolution:** `ml/scripts/prepare_audio_clips.py` trims silence, then high-pass → mono → compressor → two-pass loudnorm → 48 kHz. ffmpeg comes from the `imageio-ffmpeg` wheel (no system install needed on Windows). Trimming the leading silence alone saves about 1 s of H2 siren latency.
+- **Status:** active
+

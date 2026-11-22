@@ -1,0 +1,3 @@
+# Dev-machine tooling for preparing the deterrent audio clips (ml/scripts/prepare_audio_clips.py, P0.9).
+# imageio-ffmpeg (BSD-2-Clause) bundles a static ffmpeg binary; it is never shipped in the app.
+imageio-ffmpeg==0.8.1

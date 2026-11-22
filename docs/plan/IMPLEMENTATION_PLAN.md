@@ -27,7 +27,7 @@ Update the **Done** column when ticking boxes.
 
 | Phase | Goal | Done / Total | Status | Exit gate |
 | --- | --- | --- | --- | --- |
-| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 9 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
+| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 10 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
 | [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 3 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
 | [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
@@ -35,7 +35,7 @@ Update the **Done** column when ticking boxes.
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
 | [P6](#phase-6--custom-models-and-tuning) | Fine-tuned models, plate OCR A/B, tuning | 0 / 10 | ⚪ | Custom detector beats stock on field validation set |
 | [P7](#phase-7--field-validation-and-mvp-release) | Full journeys at the site, pilot, v1.0 release | 0 / 6 | ⚪ | PRD §12 exit criteria met → tag `v1.0.0` |
-| **Total** | | **12 / 91** | | |
+| **Total** | | **13 / 91** | | |
 
 ## Tracks and critical path
 
@@ -67,11 +67,12 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
   - Done when: a PR shows a green required check. ✔ first run green 2026-11-21 ([run](https://github.com/DrOpenSource/litterguard/actions/runs/44905003545)); `main` is protected (PR + `gate` required, linear history, no force-push).
 - [x] **P0.8** Moto G54 baseline. **Owner:** OWNER_GUIDE **Task A** (About-phone screenshot, switch on USB debugging, plug in). **Agent, over adb:** the full checklist in [moto-g54.md](../devices/moto-g54.md), including `benchmark_model` for stock YOLO11n INT8 at 320/416/640 on CPU (2 and 4 threads) and on GPU, the camera high-res-mode probe, and `getThermalHeadroom` behaviour. · M
   - Done when: results are in LEARNINGS (`[device:moto-g54]`) and the **detector input size + accelerator** decision is appended to ADR-0003. ✔ 2026-11-21: the decision is 416 px, CPU INT8 with 4 threads (p50 32 ms), with GPU FP32 as the alternate (58 ms) and no NPU. The legacy `benchmark_model` binary was replaced by `DetectorBenchmarkTest` (CompiledModel API). Still open, moved to the app phases: `getThermalHeadroom()` value (P2.6), 30-minute camera soak (P2.4), Motorola battery settings (P4.7).
-- [ ] **P0.9** `[human]` Record the deterrent audio (OWNER_GUIDE **Task C**; the agent copies the files over adb and normalises the loudness):
-  - a warning clip (EN then Kannada, ≤ 6 s);
+- [x] **P0.9** `[human]` Record the deterrent audio (OWNER_GUIDE **Task C**; the agent copies the files over adb and normalises the loudness):
+  - a warning clip (English only, D7);
   - a pre-warning clip (for later A/B);
   - a short test tone.
   - Format: 48 kHz, loudness-normalised (around −14 LUFS); your own recording or a CC0 licence. Long lead time. · S
+  - Done 2026-11-22: the owner recorded the English warning and notice. `ml/scripts/prepare_audio_clips.py` produced `core/alerts/src/main/res/raw/` `warning_en.wav` (11.1 s), `notice_en.wav` (pre-warning, 3.4 s) and a synthetic `test_tone.wav`: 48 kHz mono, about −14.8 LUFS, −1.5 dBTP, leading silence trimmed. The owner agreed to publish their voice with the code. Still to check: how it sounds through the phone speaker (Task E).
 - [x] **P0.10** `[human]` Create a Telegram bot and a private test group (OWNER_GUIDE **Task B**). The owner keeps the token private and types it into the app later; the chat ID is auto-detected by the app (P2.10). · S
   - Done 2026-11-22: bot "LitterGuard" (@LitterGuardBot), test group "LitterGuard Test".
 - [ ] **P0.11** `[human]` Site reconnaissance (OWNER_GUIDE **Task D**): mount point, distance, lighting at dawn, dusk and night, power, Wi-Fi, usual dumping times. The agent copies the photos to `field-data/` (git-ignored) over adb. · S
