@@ -91,3 +91,9 @@
 - **Observed:** 2026-11-21. Pushing and running the prebuilt `android_aarch64_benchmark_model` (TF nightly bucket) over adb was denied by the agent permission classifier.
 - **Resolution:** measure model latency with our own instrumented benchmark built from pinned Maven LiteRT (`:core:ml` androidTest). It is also closer to production, because it uses the CompiledModel API rather than the legacy delegate. Alternatively, the owner can allow the action explicitly.
 - **Status:** active
+
+### [telegram] Group chat-ID auto-detection can't rely on an old `/start`
+- **Observed:** 2026-11-22, Telegram Bot API docs (`getUpdates`; bot privacy mode FAQ), while closing P0.10.
+- **Evidence:** undelivered updates are kept for at most 24 hours, so the `/start` sent during Task B will be gone when the app is built. In privacy mode (the default) a bot in a group only gets commands addressed to it (`/start@LitterGuardBot`), replies to it, service messages, and a plain `/start` only if it was the last bot to post there. A `my_chat_member` update is always sent when the bot is added to a chat.
+- **Resolution:** P2.10 detects the group from a fresh action during in-app setup: open an "Add to group" deep link (`t.me/<bot>?startgroup=<nonce>`), then match the `my_chat_member` update or `/start@<bot> <nonce>`. Read the bot username from `getMe`; don't hard-code it. Don't call `deleteWebhook`/set webhooks.
+- **Status:** active. Verify when P2.10 is built.
