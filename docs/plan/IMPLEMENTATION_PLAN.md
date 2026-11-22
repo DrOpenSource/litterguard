@@ -27,7 +27,7 @@ Update the **Done** column when ticking boxes.
 
 | Phase | Goal | Done / Total | Status | Exit gate |
 | --- | --- | --- | --- | --- |
-| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 8 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
+| [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 9 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
 | [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 3 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
 | [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
@@ -35,7 +35,7 @@ Update the **Done** column when ticking boxes.
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
 | [P6](#phase-6--custom-models-and-tuning) | Fine-tuned models, plate OCR A/B, tuning | 0 / 10 | ⚪ | Custom detector beats stock on field validation set |
 | [P7](#phase-7--field-validation-and-mvp-release) | Full journeys at the site, pilot, v1.0 release | 0 / 6 | ⚪ | PRD §12 exit criteria met → tag `v1.0.0` |
-| **Total** | | **11 / 91** | | |
+| **Total** | | **12 / 91** | | |
 
 ## Tracks and critical path
 
@@ -72,7 +72,8 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
   - a pre-warning clip (for later A/B);
   - a short test tone.
   - Format: 48 kHz, loudness-normalised (around −14 LUFS); your own recording or a CC0 licence. Long lead time. · S
-- [ ] **P0.10** `[human]` Create a Telegram bot and a private test group (OWNER_GUIDE **Task B**). The owner keeps the token private and types it into the app later; the chat ID is auto-detected by the app (P2.10). · S
+- [x] **P0.10** `[human]` Create a Telegram bot and a private test group (OWNER_GUIDE **Task B**). The owner keeps the token private and types it into the app later; the chat ID is auto-detected by the app (P2.10). · S
+  - Done 2026-11-22: bot "LitterGuard" (@LitterGuardBot), test group "LitterGuard Test".
 - [ ] **P0.11** `[human]` Site reconnaissance (OWNER_GUIDE **Task D**): mount point, distance, lighting at dawn, dusk and night, power, Wi-Fi, usual dumping times. The agent copies the photos to `field-data/` (git-ignored) over adb. · S
 - [ ] **P0.R** Phase review. · S
 
@@ -145,6 +146,7 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
     - MockWebServer contract tests and a **Send test alert** button.
 - [ ] **P2.10** Setup feature. Covers `FR-1.1–1.5`. · M · after: P2.7, P1.3
   - Scope: onboarding and permission requests (Camera, Notifications, one-time Location); the ROI editor on the `camera-compose` viewfinder (drag, undo, clear, self-intersection guard); and settings. Settings are designed for a non-technical operator: paste the bot token, then **the app finds the group chat automatically** (`getUpdates` after a `/start` in the group), with no chat-ID typing.
+  - Detection must use a **fresh** update at setup time: Telegram drops undelivered updates after 24 h, and privacy mode can hide a plain `/start` in groups. Prefer an "Add to group" deep link (`t.me/<bot>?startgroup=…`) and match on the `my_chat_member` update, falling back to `/start@<bot>` (see LEARNINGS `[telegram]`).
 - [ ] **P2.11** Monitor feature: start/stop and a debug overlay showing boxes, track IDs, state, FPS, accelerator and motion score. The overlay draws in the draw phase. · M · after: P2.6
 - [ ] **P2.12** `MonitoringService` v1: a `camera`-type foreground service, an ongoing notification with a Stop action, the session scope, and the manifest permissions. Covers `FR-8.1`. · S · after: P2.6
 - [ ] **P2.13** App shell: navigation (setup → monitor → incidents), Hilt WorkManager configuration, and the `:core:ui` theme. · S
