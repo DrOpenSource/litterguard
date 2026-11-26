@@ -189,6 +189,8 @@ The MVP therefore detects **"something new that was left behind by an actor"** w
 7. **Blocked view.** While a live person, vehicle or animal hides part of the zone, "nothing is there" is not trusted, and a hidden candidate does not count as missing. The wait is capped at `max_occluded_wait`. Without this, someone standing just outside the zone in front of the object would cancel the event.
 8. **Settling.** Motion caused only by people or vehicles that have already left the zone does not postpone the comparison.
 
+9. **Removals.** A diff alone can't tell "added" from "taken away". If a region's outline was much stronger in the baseline than it is now, something was removed: it never counts as dumping, and the baseline takes in the new view. Without this, a waste picker taking something away would set off the siren.
+
 This also covers the parked-vehicle case without special code. B is frozen before the car arrives and compared after it leaves, so the car itself never becomes a "new object".
 
 ### 6.3 State machine
@@ -232,6 +234,9 @@ All of these live in one `DetectionConfig` data class; nothing is hard-coded els
 | `object_stability_iou` | 0.6 | |
 | `object_luma_threshold` / `object_edge_threshold` | 30 / 24 | Baseline diff, per grid cell (320×240 grid over the ROI) |
 | `object_min_edge_support` | 5% of blob | Rejects soft shadows and patches of light |
+| `roi_crop_headroom` | 40% of frame height | The detector's crop reaches this far above the zone, so standing people fit |
+| `scenery_after` | 10 s | Someone still outside the zone this long no longer blocks the baseline refresh |
+| `removed_object_edge_ratio` | 1.4 | A region whose outline was this much stronger before is a removal |
 | `actor_overlap_discard_fraction` | 30% of blob | Blobs mostly under a live actor or animal are ignored |
 | `baseline_history` | 3 | Per-cell median of the last N quiet snapshots |
 | `max_settle_wait` | 3.0 s | Continuous motion cannot delay the comparison longer than this |

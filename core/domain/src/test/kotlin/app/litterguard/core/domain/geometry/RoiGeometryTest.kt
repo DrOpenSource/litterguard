@@ -114,3 +114,44 @@ class RoiGeometryTest {
         assertThat(crop.bottom).isEqualTo(1f) // clamped
     }
 }
+
+class CropHeadroomTest {
+    private fun ground(
+        top: Float,
+        bottom: Float,
+    ) = app.litterguard.core.model.Polygon(
+        listOf(
+            app.litterguard.core.model
+                .NormalizedPoint(0.3f, top),
+            app.litterguard.core.model
+                .NormalizedPoint(0.7f, top),
+            app.litterguard.core.model
+                .NormalizedPoint(0.7f, bottom),
+            app.litterguard.core.model
+                .NormalizedPoint(0.3f, bottom),
+        ),
+    )
+
+    @org.junit.jupiter.api.Test
+    fun `headroom reaches above the zone but leaves the other sides alone`() {
+        val crop = ground(0.6f, 0.9f).cropRect(margin = 0.1f, headroom = 0.4f)
+        val plain = ground(0.6f, 0.9f).cropRect(margin = 0.1f)
+
+        com.google.common.truth.Truth
+            .assertThat(crop.top)
+            .isWithin(1e-5f)
+            .of(0.2f)
+        com.google.common.truth.Truth
+            .assertThat(crop.copy(top = plain.top))
+            .isEqualTo(plain)
+    }
+
+    @org.junit.jupiter.api.Test
+    fun `headroom stops at the top of the picture`() {
+        val crop = ground(0.2f, 0.5f).cropRect(margin = 0.1f, headroom = 0.4f)
+
+        com.google.common.truth.Truth
+            .assertThat(crop.top)
+            .isEqualTo(0f)
+    }
+}

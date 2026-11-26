@@ -1,0 +1,28 @@
+{
+  "detector": {
+    "name": "yolo11n-coco",
+    "version": "ultralytics-8.4.216-416",
+    "license": "AGPL-3.0",
+    "source": "Stock Ultralytics YOLO11n (COCO), exported to LiteRT by .github/workflows/ml-export-bench.yml",
+    "input": { "size": 416, "layout": "NCHW", "type": "float32", "range": "RGB 0..1" },
+    "output": { "channels": 84, "anchors": 3549, "boxes": "cx,cy,w,h normalised to the input" },
+    "postprocess": { "confidenceFloor": 0.25, "nmsIou": 0.45 },
+    "variants": [
+      {
+        "id": "int8",
+        "file": "yolo11n_int8_416.tflite",
+        "url": "https://github.com/DrOpenSource/litterguard/releases/download/models-v1/yolo11n_int8_416.tflite",
+        "sha256": "694b3f22bf248074d2031f5eac5287cce3442a53ae9310834fba669eae5ff920",
+        "accelerator": "CPU",
+        "threads": 4
+      },
+      {
+        "id": "fp32",
+        "file": "yolo11n_fp32_416.tflite",
+        "url": "https://github.com/DrOpenSource/litterguard/releases/download/models-v1/yolo11n_fp32_416.tflite",
+        "sha256": "4778b2b6a693b14e4ef228217041fe6def4d05d80dfc2244b3ccf8fb25009fb1",
+        "accelerator": "GPU"
+      }
+    ]
+  }
+}

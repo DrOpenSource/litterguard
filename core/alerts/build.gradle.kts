@@ -12,6 +12,7 @@ android {
 
 dependencies {
     implementation(projects.core.domain)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)

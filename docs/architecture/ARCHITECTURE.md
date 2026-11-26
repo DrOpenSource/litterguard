@@ -59,9 +59,12 @@ Hilt `@Binds` modules live in each infra module (`:core:ml` binds `ObjectDetecto
 | `SiteConfigRepository` | `:core:data` | `Flow<SiteConfig>`, update ROI and settings |
 | `EvidenceStore` | `:core:data` | write/read/purge evidence images (app-private files) |
 | `ThermalMonitor` | `:core:monitoring` | `Flow<ThermalLevel>` |
-| `Clock` | `:core:domain` (System impl) | Injected time source, so tests are deterministic |
+| `Clock` | `:core:monitoring` (system impl) | Injected time source, so tests are deterministic |
+| `ObjectDetectorFactory` | `:core:ml` | `open(): ObjectDetector`, one per monitoring session, closed at its end |
+| `MonitoringController` | `:core:monitoring` | Start and stop watching, plus a `StateFlow` of what the pipeline sees (used by the screens) |
+| `AlertChannelSetup` | `:core:alerts` | Guided Telegram setup; the token goes in and never comes back out |
 
-`ImageBuffer` is a pooled, platform-neutral ARGB/RGB buffer (`width`, `height`, `IntArray` or `ByteArray`). Conversion to and from `Bitmap`/`ImageProxy` happens only in `:core:camera` and `:core:ml`. This one choice is what lets the whole decision pipeline run in JVM tests.
+`ImageBuffer` is a pooled, platform-neutral ARGB buffer (`width`, `height`, `IntArray`). `ImageProxy` is only touched in `:core:camera`. `Bitmap` conversion happens only at the edges that need it: `:core:ui` (display, ADR-0005), `:core:data` (JPEG encoding) and instrumented tests. This one choice is what lets the whole decision pipeline run in JVM tests.
 
 ## 4. Runtime pipeline
 
@@ -90,7 +93,7 @@ Effect executor (IO dispatcher, supervised; one effect's failure never kills the
 
 ### ROI-crop inference
 
-The detector runs on the **bounding rectangle of the ROI** (plus a 10% margin so arriving actors are caught), letterboxed to the model input. It does not run on the full frame. Two gains: compute drops roughly in proportion to the ROI share of the frame, and distant, small objects get more input pixels. Boxes are mapped back to normalised frame coordinates in the adapter.
+The detector runs on the **bounding rectangle of the ROI** (plus a 10% margin so arriving actors are caught, and `roi_crop_headroom` above it: the ROI lies on the ground and people stand up from it), letterboxed to the model input. It does not run on the full frame. Two gains: compute drops roughly in proportion to the ROI share of the frame, and distant, small objects get more input pixels. Boxes are mapped back to normalised frame coordinates in the adapter.
 
 ### Threading and lifecycle rules
 

@@ -43,4 +43,14 @@ class FramesTest {
         val img = ImageBuffer(2, 2, intArrayOf(1, 2, 3, 4))
         assertThat(img[0, 1]).isEqualTo(3)
     }
+
+    @Test
+    fun `downscaling keeps every nth pixel`() {
+        val img = ImageBuffer(4, 2, intArrayOf(1, 2, 3, 4, 5, 6, 7, 8))
+
+        val half = img.downscaled(2)
+
+        assertThat(half.width to half.height).isEqualTo(2 to 1)
+        assertThat(half.pixels.toList()).containsExactly(1, 3).inOrder()
+    }
 }

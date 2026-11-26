@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="monitor_starting">Starting the camera and loading the recogniser…</string>
+    <string name="monitor_stopped">Not watching.</string>
+    <string name="monitor_start">Start watching</string>
+    <string name="monitor_stop">Stop watching</string>
+    <string name="monitor_back">Home (keeps watching)</string>
+    <string name="monitor_confirmed_count">Dumping events this session: %1$d</string>
+    <string name="monitor_speed">%1$s pictures per second</string>
+    <string name="monitor_inference">Recognition: %1$d ms</string>
+
+    <string name="headline_learning">Looking at the empty zone…</string>
+    <string name="headline_watching">Watching</string>
+    <string name="headline_person">Someone is in the zone</string>
+    <string name="headline_animal">Animal in the zone</string>
+    <string name="headline_checking">Checking what was left…</string>
+    <string name="headline_new_object">New object: checking it stays (%1$d s)</string>
+    <string name="headline_alert">🚨 Dumping detected</string>
+
+    <string name="box_person">Person</string>
+    <string name="box_vehicle">Vehicle</string>
+    <string name="box_animal">Animal</string>
+    <string name="box_other">Other</string>
+    <string name="box_new_object">New object</string>
+
+    <string name="failure_no_zone">Draw the dump zone first.</string>
+    <string name="failure_error">Something went wrong: %1$s</string>
+</resources>

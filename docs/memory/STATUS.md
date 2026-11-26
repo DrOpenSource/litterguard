@@ -3,51 +3,52 @@
 > T1 working memory. Overwrite it to stay current; keep it under ~80 lines. See [MEMORY_ARCHITECTURE.md](../agent/MEMORY_ARCHITECTURE.md).
 
 ## Now
-Phase: **0 (10/12) and 1 (3/15) in parallel** · Repo: [DrOpenSource/litterguard](https://github.com/DrOpenSource/litterguard) · Updated: 2026-11-22
-- `main` is pushed and protected: PR plus a green `gate` check required, linear history, no force-push. CI takes ~4 min.
-- **The owner is non-technical.** Give them tasks only via [OWNER_GUIDE.md](../owner/OWNER_GUIDE.md), one at a time (AGENTS.md §7).
-- **Task A is done.** The G54 is connected over USB to the dev PC, and adb works.
-- **Task B is done (P0.10).** Bot "LitterGuard" = @LitterGuardBot, group "LitterGuard Test". The owner holds the token; never ask for it. P2.10 must detect the group from a fresh action at setup (LEARNINGS `[telegram]`).
-- **Task C is done (P0.9). Audio is English only (D7).** The clips are in `core/alerts/src/main/res/raw/` (`warning_en`, `notice_en`, `test_tone`), built by `ml/scripts/prepare_audio_clips.py`. The raw recordings are in git-ignored `field-data/audio/raw/`. The owner agreed to publish their voice.
-- **P0.8 is done.** Findings: [moto-g54.md](../devices/moto-g54.md) and the ADR-0003 addendum.
-  - Android 15; apps get at most 12.6 MP (no 50 MP); HFOV ≈ 61°.
-  - The thermal HAL jumps NONE → SEVERE, so FR-8.4 now uses headroom tiers.
-  - Detector: **416 px, CPU INT8 with 4 threads (p50 32 ms)**; GPU FP32 is the alternate (58 ms, fully resident); the NPU is unusable.
-- Benchmark tooling: `DetectorBenchmarkTest` (`:core:ml` androidTest) runs on models from the `ml-export-bench` workflow artifact. Ultralytics LiteRT export does not run on Windows.
-- Done in Phase 1: P1.1–P1.3 (61 tests).
-- Decided: D1 = AGPL-3.0, D2 = pre-warning off for J3, D3 = Moto G54. ADR-0003/0004 Accepted.
-- Known lint warnings (expected): `OldTargetApi` (targetSdk 36 is deliberate), `MissingApplicationIcon` (placeholder). `UnusedResources` ×3 for the audio clips until P2.8 plays them.
+Phase: **2 (walking skeleton), code complete, never yet run on a phone** · Branch: `feat/p2.1-p2.5-detector-camera` · Repo: [DrOpenSource/litterguard](https://github.com/DrOpenSource/litterguard) · Updated: 2026-11-26
+- **Goal:** a demo for the owner's friend, who visits on **2026-11-27** (the friend also picks the site: OWNER_GUIDE Task D).
+- **The owner is non-technical.** Tasks only via [OWNER_GUIDE.md](../owner/OWNER_GUIDE.md), one at a time (AGENTS.md §7).
+- The decision core is merged (PR #6: P1.4–P1.7, P1.11, P1.13).
+- This branch adds, after #6: removal detection, crop headroom, the scenery rule, the LiteRT detector, CameraX frames, Room/DataStore/evidence files, siren, Telegram, the foreground-service session and all screens (parts of P2.1–P2.13).
+- **Local gate green** 2026-11-26: `spotlessCheck detekt test lintDebug assembleDebug -PwarningsAsErrors=true -PlitterguardModelsDir=ml/weights/litert`, 231 tests.
+- **CI will fail on this branch** until the `models-v1` release exists (see below). No Phase 2 box is ticked: none has been verified on the device.
 
 ## Next (resume here)
-1. Owner: **Task D** (site visit) was requested on 2026-11-22. When they're done, copy the photos to `field-data/site/` over adb (never into git) and record the answers in P0.11.
-2. Agent track: P1.4 MotionGate, P1.5 Tracker, P1.10 Ports + fakes (parallel; none started yet, no open branches), then P1.6 BaselineModel. One PR per slice; CI `gate` must pass before squash-merging.
-3. P2.2 can now proceed: the input size is decided (416).
+1. Phone connected → run `DetectorGoldenTest` (`:core:ml:connectedDebugAndroidTest`, needs `-PlitterguardModelsDir`). If INT8 misses people, put `fp32`/GPU first in `models.json` and its test.
+2. `:app:installDebug`, then drive the whole loop over adb: permissions, zone, siren, live boxes, a bag drop, the switch to another app while watching.
+3. Owner: OWNER_GUIDE **Task E** (set up), **Task F** (rehearse and demo), then **Task D** at the site, including the new "can the app see a person from there" step.
+4. After the demo: finish P2 gaps (see below), then P2.14.
+
+## Blocked: needs the owner's approval
+- Publishing the two stock model files as a GitHub **pre-release `models-v1`** (P2.2; URLs and sha256 are already in `core/ml/models.json`). The agent's permission check denied it on 2026-11-26; don't work around it.
+
+## P2 gaps (known, not blocking the demo)
+- P2.6 per-stage latency metrics (only detector ms and confirm delay are logged). P2.7 `delivery_attempt` table and DAO tests (adding the table needs a migration). P2.10 onboarding and one-time location. P2.11 overlay has no track IDs or accelerator line beyond the model description.
+- P1.8, P1.10 (shared fakes), P1.12 (JSONL format), P1.9, P1.14 still open.
 
 ## Local dev-machine state (not in git)
-- `ml/.venv`: Python 3.12 with Ultralytics 8.4.216 + torch CPU, plus `imageio-ffmpeg` (ffmpeg for the audio script). It can't export LiteRT on Windows; use the `ml-export-bench` workflow.
-- `core/ml/src/androidTest/assets/bench/`: 6 stock YOLO11n benchmark models (git-ignored). The CI artifact expires 7 days after 2026-11-21; re-run the workflow to get them again.
+- `ml/weights/litert/`: the two model files for `-PlitterguardModelsDir` (sha256 matches `models.json`).
+- `core/ml/src/androidTest/assets/bench/`: benchmark models plus `bus.jpg` for the golden test.
+- `ml/.venv`: Python 3.12 with Ultralytics 8.4.216. It can't export LiteRT on Windows; use `ml-export-bench`.
 - The G54 is authorised for adb on this PC ("Always allow").
 
 ## Open questions (need a human)
-- D4: custom vehicle classes (auto-rickshaw, goods carrier) in v1 or v2? Default: v2 (P6.2).
-- D5: Telegram only, or Supabase as well? Default: Telegram only.
-- D6: final applicationId (currently `app.litterguard`)? Change it before the first public release.
+- A parked vehicle **inside** the zone keeps "someone is in the zone" forever, so dumping next to it is never judged (PRD only stops captures after `parked_actor_timeout`). For now: draw the zone clear of parking.
+- An object thrown into the zone by someone who never steps in is not caught (only animal-only visits become `UNATTRIBUTED_OBJECT`).
+- Licensing: `litert-api` pulls the proprietary `com.google.android.play:ai-delivery` → `asset-delivery`, which LICENSE-EXCEPTIONS does not cover. Settle before any public APK release.
+- D4: custom vehicle classes in v1 or v2? Default: v2. · D5: Telegram only? Default: yes. · D6: final applicationId.
 
 ## Assumptions made (revisit)
-- Debug APK is ~118 MB (LiteRT + ML Kit native libs for all ABIs). P2.1 restricts `abiFilters` to `arm64-v8a`.
-- Package/namespace root is `app.litterguard`.
-- minSdk 29, so repurposed older phones still work (ADR-0001).
-- Thermal headroom cut-offs 0.80 / 1.0 (FR-8.4) are first guesses; tune them from the P2.6 soak.
-- INT8 accuracy is assumed acceptable until P6; if it isn't, switch to GPU FP32 (ADR-0003 addendum).
+- Screens draw on analysis frames, not a viewfinder (ADR-0005, Proposed). The app is landscape-only, and the camera follows landscape rotations only.
+- Added beyond the old PRD, with tunables in §6.4: occlusion waiting, removal detection, `roi_crop_headroom` 0.40, `scenery_after` 10 s.
+- One suppressed lint: `disableAutoFallbackToCpu()` is marked tests-only by LiteRT but ADR-0004 needs strict GPU.
+- Package root `app.litterguard`, minSdk 29. INT8 accuracy is unproven (calibrated on coco8).
+- WorkManager adds `WAKE_LOCK` and `RECEIVE_BOOT_COMPLETED`; the latter isn't in PRD §9's list yet.
 
 ## Needs device verification
-- How the 11 s warning clip sounds through the G54 speaker and a BT speaker at full volume (P2.8 Test Siren / Task E).
-- `getThermalHeadroom()` value and trend from inside the app (P2.6); 30-minute camera soak (P2.4).
-- Camera foreground service blocked from BOOT_COMPLETED on Android 15 (P4.6).
-- Motorola battery-optimisation path and kiosk survival (P4.7).
+- **Everything in Phase 2.** Especially: model load and output decoding, INT8 vs FP32 accuracy, camera frames upright and aligned with the zone, switching apps while watching, siren loudness and routing, Keystore token storage, Telegram delivery, latency from leaving to siren (< 8 s).
+- Removal and shadow handling on real ground (synthetic scenes only).
+- `getThermalHeadroom()` and the 30-minute camera soak (P2.4/P2.6); BOOT_COMPLETED and Motorola battery behaviour (P4.6/P4.7).
 
 ## Recent sessions
-- 2026-11-22 — Owner finished Task B (Telegram bot, P0.10) and Task C (English-only audio, P0.9, D7); Task D requested.
-- 2026-11-21 — Owner connected the G54; P0.8 baseline + detector benchmark done (PR #2); FR-8.4 thermal tiers revised.
-- 2026-11-21 — Pushed to GitHub, CI + branch protection; owner guide; P1.1–P1.3 implemented (PR #1).
-- 2026-11-21 — Decisions D1–D3 applied; AGPL LICENSE + exception draft; ADR-0003/0004; skills vendored; G54 profile; implementation plan written.
+- 2026-11-26 — Decision core merged (#6); Phase 2 skeleton written and gate green locally; review and scenarios found and fixed five demo-breaking bugs; owner guide Tasks E and F added.
+- 2026-11-22 — Owner finished Tasks B (bot) and C (audio); Task D requested.
+- 2026-11-21 — G54 baseline and benchmark (PR #2); GitHub + CI; P1.1–P1.3 (PR #1); decisions D1–D3.

@@ -78,6 +78,25 @@ internal object GridOps {
         }
     }
 
+    /** The cells on both sides of a component's outline: its outermost cells and their neighbours outside it. */
+    fun border(
+        component: Component,
+        width: Int,
+        height: Int,
+    ): Set<Int> {
+        val inside = component.cells.toHashSet()
+        val result = mutableSetOf<Int>()
+        for (cell in component.cells) {
+            forEachNeighbour(cell, width, height) { next ->
+                if (next !in inside) {
+                    result += next
+                    result += cell
+                }
+            }
+        }
+        return result
+    }
+
     /** A connected region of set cells (8-connectivity). */
     class Component(
         val cells: IntArray,

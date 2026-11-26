@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Back</string>
+
+    <string name="home_title">LitterGuard</string>
+    <string name="home_start">Start watching</string>
+    <string name="home_view_live">Watching now: open live view</string>
+    <string name="home_not_ready">Allow the camera and draw the dump zone first.</string>
+    <string name="home_incidents">Past incidents</string>
+
+    <string name="step_camera">1. Camera</string>
+    <string name="camera_why">LitterGuard needs the camera to watch the dumping spot. Pictures stay on this phone, except alerts you send to your own group.</string>
+    <string name="camera_allowed">Camera allowed ✓</string>
+    <string name="camera_denied">The camera is blocked, so LitterGuard cannot watch. You can allow it in Settings under Permissions.</string>
+    <string name="camera_allow">Allow camera</string>
+    <string name="open_settings">Open Settings</string>
+
+    <string name="step_zone">2. Dump zone</string>
+    <string name="zone_saved">Dump zone saved ✓</string>
+    <string name="zone_missing">Mark the patch of ground to watch.</string>
+    <string name="zone_draw">Draw dump zone</string>
+    <string name="zone_redraw">Change dump zone</string>
+
+    <string name="step_siren">3. Warning sound</string>
+    <string name="route_phone">Sound will play from the phone speaker.</string>
+    <string name="route_bluetooth">Sound will play from the Bluetooth speaker: %1$s</string>
+    <string name="siren_test">Test siren (loud)</string>
+    <string name="siren_stop">Stop siren</string>
+
+    <string name="step_alerts">4. Telegram alerts (optional)</string>
+    <string name="alerts_ready">Alerts go to: %1$s ✓</string>
+    <string name="alerts_missing">Not set up yet. The siren works without it.</string>
+    <string name="alerts_set_up">Set up Telegram</string>
+
+    <string name="site_name">Site name (shown in alerts)</string>
+    <string name="sensitivity">Sensitivity</string>
+    <string name="sensitivity_low">Low</string>
+    <string name="sensitivity_normal">Normal</string>
+    <string name="sensitivity_high">High</string>
+
+    <string name="zone_opening_camera">Opening the camera…</string>
+    <string name="zone_camera_failed">The camera could not be opened. Go back and try again.</string>
+    <string name="zone_instructions">Tap the corners of the dumping patch, going around it. Drag a corner to move it.</string>
+    <string name="zone_points">Corners: %1$d (4 to 12)</string>
+    <string name="zone_save">Save zone</string>
+    <string name="zone_undo">Undo last</string>
+    <string name="zone_clear">Clear all</string>
+    <string name="zone_too_few">Add at least %1$d corners.</string>
+    <string name="zone_too_many">Use at most %1$d corners.</string>
+    <string name="zone_too_small">The zone is too small. Make it bigger.</string>
+    <string name="zone_crossing">The lines cross each other. Tap the corners in order around the patch.</string>
+    <string name="zone_outside">Keep every corner inside the picture.</string>
+
+    <string name="alerts_title">Telegram alerts</string>
+    <string name="alerts_token_help">Paste the bot token that BotFather gave you. It is saved encrypted on this phone only. Never send it to anyone.</string>
+    <string name="alerts_token_label">Bot token</string>
+    <string name="alerts_connect">Connect bot</string>
+    <string name="alerts_bot_connected">Bot connected: @%1$s ✓</string>
+    <string name="alerts_group_help">Next: 1) tap “Open Telegram” and pick your group. 2) Come back here and tap “Find my group”.</string>
+    <string name="alerts_group_found">Alerts go to the group “%1$s”. Send a test to make sure it is the right one.</string>
+    <string name="alerts_open_telegram">Open Telegram</string>
+    <string name="alerts_find_group">Find my group</string>
+    <string name="alerts_send_test">Send test alert</string>
+    <string name="alerts_disconnect">Remove bot from this phone</string>
+    <string name="alerts_no_telegram">Telegram could not be opened. Is it installed on this phone?</string>
+
+    <string name="result_connected">Bot connected.</string>
+    <string name="result_group_found">Group found.</string>
+    <string name="result_test_sent">Test alert sent. Check your Telegram group.</string>
+    <string name="result_bad_token">That token did not work. Copy it again from BotFather and paste all of it.</string>
+    <string name="result_no_network">Could not reach Telegram. Check Wi-Fi or mobile data and try again.</string>
+    <string name="result_no_group">No group found yet. In your group, send the message /start@ followed by your bot’s name, then tap “Find my group” again.</string>
+    <string name="result_failed">Telegram said no: %1$s</string>
+</resources>

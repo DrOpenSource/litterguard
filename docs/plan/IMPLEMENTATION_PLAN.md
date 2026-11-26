@@ -29,7 +29,7 @@ Update the **Done** column when ticking boxes.
 | --- | --- | --- | --- | --- |
 | [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 10 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
 | [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 9 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
-| [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
+| [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | 🟡 Written, untested on device | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
 | [P4](#phase-4--reliability-and-device-hardening) | Thermal, kiosk, recovery, endurance | 0 / 14 | ⚪ | J5, J6, J7 pass on the G54 |
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
@@ -123,6 +123,8 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 
 **Goal:** the whole loop runs on the real phone with the stock COCO detector: camera → detect → decide → siren → persist → Telegram.
 **Exit:** on the G54, a foot-drop gives a siren < 8 s after the actor leaves and a Telegram photo; J1 setup < 3 min; zero false sirens in a 10-minute walk-through.
+
+> **2026-11-26:** a first version of P2.1–P2.13 is written and passes the local gate. No box is ticked because nothing has run on the G54 yet, and the model release (P2.2) is waiting for the owner's approval. Known gaps are listed in [STATUS.md](../memory/STATUS.md).
 
 - [ ] **P2.1** Model delivery (ADR-0004). · M
   - Scope: the `core/ml/models.json` schema; a Gradle task that downloads models, checks sha256 (and fails the build on mismatch), and supports the `-PlitterguardModelsDir` override; `noCompress "tflite"`; `abiFilters "arm64-v8a"`.

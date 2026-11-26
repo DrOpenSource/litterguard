@@ -90,6 +90,31 @@ class BaselineModelTest {
     }
 
     @Test
+    fun `something taken away is a removal, not a new object`() {
+        val withBag = SyntheticScene(listOf(bag(0.5f, 0.7f, from = 0.0)))
+        model.offerQuiet(withBag.lumaAt(0.0), start)
+
+        val diff = compared(empty.lumaAt(5.0))
+
+        assertThat(diff.blobs).isEmpty()
+        assertThat(diff.somethingRemoved).isTrue()
+    }
+
+    @Test
+    fun `an object that moved is reported only where it now is`() {
+        model.offerQuiet(SyntheticScene(listOf(bag(0.35f, 0.7f, from = 0.0))).lumaAt(0.0), start)
+
+        val diff = compared(SyntheticScene(listOf(bag(0.65f, 0.7f, from = 0.0))).lumaAt(5.0))
+
+        assertThat(diff.somethingRemoved).isTrue()
+        assertThat(
+            diff.blobs
+                .single()
+                .box.center.x,
+        ).isWithin(0.03f).of(0.65f)
+    }
+
+    @Test
     fun `a global brightness change is normalised away`() {
         capture()
 

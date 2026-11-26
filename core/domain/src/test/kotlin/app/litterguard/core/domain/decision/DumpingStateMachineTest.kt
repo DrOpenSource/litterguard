@@ -265,6 +265,16 @@ class DumpingStateMachineTest {
     }
 
     @Test
+    fun `a removal ends the visit and updates the baseline without any incident`() {
+        val removal = BaselineDiff.Compared(0.01f, emptyList(), somethingRemoved = true)
+
+        val result = machine.step(MachineState(settling), observation(Input.NOTHING).copy(diff = removal))
+
+        assertThat(result.state.phase).isEqualTo(Phase.Idle)
+        assertThat(result.effects).containsExactly(Effect.AbsorbIntoBaseline, Effect.DiscardEvidence).inOrder()
+    }
+
+    @Test
     fun `the pre-warning is off by default`() {
         val result = machine.step(MachineState(actorPresent), observation(Input.ACTOR).copy(diff = blobDiff()))
 

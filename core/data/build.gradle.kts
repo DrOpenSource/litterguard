@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.litterguard.android.library)
     alias(libs.plugins.litterguard.hilt)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.room)
 }
 
@@ -20,5 +21,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.timber)
 }
