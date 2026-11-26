@@ -186,6 +186,9 @@ The MVP therefore detects **"something new that was left behind by an actor"** w
 5. **Persistence.** A candidate must keep IoU ≥ 0.6 with its first appearance for `dwell_time`.
 6. **Abort guards.** If the diff covers > 35% of the ROI, treat it as an illumination change or camera shake: re-baseline and log `INCONCLUSIVE`.
 
+7. **Blocked view.** While a live person, vehicle or animal hides part of the zone, "nothing is there" is not trusted, and a hidden candidate does not count as missing. The wait is capped at `max_occluded_wait`. Without this, someone standing just outside the zone in front of the object would cancel the event.
+8. **Settling.** Motion caused only by people or vehicles that have already left the zone does not postpone the comparison.
+
 This also covers the parked-vehicle case without special code. B is frozen before the car arrives and compared after it leaves, so the car itself never becomes a "new object".
 
 ### 6.3 State machine
@@ -222,15 +225,24 @@ All of these live in one `DetectionConfig` data class; nothing is hard-coded els
 | `motion_min_fraction` | 0.5% of ROI | |
 | `actor_min_confidence` | 0.45 | Per class; tuned in the field |
 | `actor_enter_frames` / `actor_exit_frames` | 2 / 3 | Hysteresis against flicker |
+| `track_match_iou` / `track_match_reach` / `track_stationary_iou` | 0.2 / 1.0 box / 0.8 | Tracker association and "standing still" |
 | `settle_time` | 1.0 s | After the last actor leaves |
 | `object_min_area` | 0.15% of frame | Should scale with ROI distance (P2) |
 | `dwell_time` | 5.0 s | From v1.0 |
 | `object_stability_iou` | 0.6 | |
+| `object_luma_threshold` / `object_edge_threshold` | 30 / 24 | Baseline diff, per grid cell (320×240 grid over the ROI) |
+| `object_min_edge_support` | 5% of blob | Rejects soft shadows and patches of light |
+| `actor_overlap_discard_fraction` | 30% of blob | Blobs mostly under a live actor or animal are ignored |
+| `baseline_history` | 3 | Per-cell median of the last N quiet snapshots |
+| `max_settle_wait` | 3.0 s | Continuous motion cannot delay the comparison longer than this |
+| `candidate_miss_tolerance` | 2 frames | |
+| `max_occluded_wait` | 30 s | Waits while a live actor blocks the view of a possible object |
 | `illumination_abort_fraction` | 35% of ROI | |
 | `cooldown` | 60 s | From v1.0 |
 | `baseline_refresh` | 30 s | IDLE only |
 | `parked_actor_timeout` | 180 s | |
 | `evidence_frames_per_track` / `speculative_captures_per_track` | 3 / 2 | |
+| `evidence_min_spacing` | 1.0 s | Between kept evidence frames |
 
 ### 6.5 Latency budget (J2: < 8 s)
 

@@ -15,6 +15,8 @@ value class MonotonicTime(
 
     operator fun plus(duration: Duration): MonotonicTime = MonotonicTime(nanos + duration.inWholeNanoseconds)
 
+    operator fun minus(duration: Duration): MonotonicTime = MonotonicTime(nanos - duration.inWholeNanoseconds)
+
     override fun compareTo(other: MonotonicTime): Int = nanos.compareTo(other.nanos)
 }
 
@@ -73,4 +75,7 @@ class ImageBuffer(
         x: Int,
         y: Int,
     ): Int = pixels[y * width + x]
+
+    /** A tightly packed deep copy, safe to retain. */
+    fun copy(): ImageBuffer = ImageBuffer(width, height, pixels.copyOf(width * height))
 }
