@@ -1,0 +1,198 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "491bdadfc3733ae3d299bb45a0f370d1",
+    "entities": [
+      {
+        "tableName": "incident",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `siteName` TEXT NOT NULL, `kind` TEXT NOT NULL, `actorCategories` TEXT NOT NULL, `actorEnteredAt` INTEGER, `actorLeftAt` INTEGER, `confirmedAt` INTEGER NOT NULL, `boxLeft` REAL, `boxTop` REAL, `boxRight` REAL, `boxBottom` REAL, `deliveryState` TEXT NOT NULL, `reviewLabel` TEXT NOT NULL, `detectorDescription` TEXT NOT NULL, `mergedCount` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "siteName",
+            "columnName": "siteName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actorCategories",
+            "columnName": "actorCategories",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actorEnteredAt",
+            "columnName": "actorEnteredAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "actorLeftAt",
+            "columnName": "actorLeftAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "confirmedAt",
+            "columnName": "confirmedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boxLeft",
+            "columnName": "boxLeft",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "boxTop",
+            "columnName": "boxTop",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "boxRight",
+            "columnName": "boxRight",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "boxBottom",
+            "columnName": "boxBottom",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "deliveryState",
+            "columnName": "deliveryState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewLabel",
+            "columnName": "reviewLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detectorDescription",
+            "columnName": "detectorDescription",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mergedCount",
+            "columnName": "mergedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_incident_confirmedAt",
+            "unique": false,
+            "columnNames": [
+              "confirmedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_incident_confirmedAt` ON `${TABLE_NAME}` (`confirmedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "evidence_file",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`rowId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `incidentId` TEXT NOT NULL, `kind` TEXT NOT NULL, `relativePath` TEXT NOT NULL, `width` INTEGER NOT NULL, `height` INTEGER NOT NULL, `capturedAt` INTEGER NOT NULL, FOREIGN KEY(`incidentId`) REFERENCES `incident`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "rowId",
+            "columnName": "rowId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incidentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativePath",
+            "columnName": "relativePath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "width",
+            "columnName": "width",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "height",
+            "columnName": "height",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturedAt",
+            "columnName": "capturedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_evidence_file_incidentId",
+            "unique": false,
+            "columnNames": [
+              "incidentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_evidence_file_incidentId` ON `${TABLE_NAME}` (`incidentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incident",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incidentId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '491bdadfc3733ae3d299bb45a0f370d1')"
+    ]
+  }
+}

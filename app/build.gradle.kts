@@ -11,7 +11,12 @@ android {
         applicationId = "app.litterguard"
         versionCode = 1
         versionName = "0.1.0"
+        // The reference phone and every realistic target are 64-bit ARM; other ABIs only bloat the APK.
+        ndk { abiFilters += "arm64-v8a" }
     }
+
+    // LiteRT memory-maps models straight from the APK, which needs them stored uncompressed.
+    androidResources { noCompress += "tflite" }
 
     buildFeatures {
         buildConfig = true

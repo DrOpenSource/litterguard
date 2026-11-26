@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="incidents_title">Past incidents</string>
+    <string name="incidents_back">Back</string>
+    <string name="incidents_empty">Nothing yet.</string>
+    <string name="evidence_picture">Evidence picture</string>
+
+    <string name="kind_dumping">Dumping detected</string>
+    <string name="kind_unattributed">Something new, nobody seen leaving it</string>
+    <string name="kind_inconclusive">Unclear: the view changed too much</string>
+
+    <string name="delivery_pending">Alert: waiting to send</string>
+    <string name="delivery_sent">Alert: sent to Telegram ✓</string>
+    <string name="delivery_failed">Alert: not sent. Check the Telegram setup.</string>
+
+    <string name="review_confirm">Yes, this was dumping</string>
+    <string name="review_false_alarm">False alarm</string>
+    <string name="reviewed_confirmed">Reviewed: dumping ✓</string>
+    <string name="reviewed_false_alarm">Reviewed: false alarm</string>
+</resources>

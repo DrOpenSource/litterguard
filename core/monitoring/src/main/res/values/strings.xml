@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="monitoring_channel_name">Watching the dump zone</string>
+    <string name="monitoring_notification_title">LitterGuard is watching</string>
+    <string name="monitoring_notification_text">The camera is on and looking at your dump zone.</string>
+    <string name="monitoring_notification_stop">Stop</string>
+</resources>

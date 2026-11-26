@@ -7,5 +7,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.camera.compose)
+    implementation(libs.androidx.core.ktx)
 }

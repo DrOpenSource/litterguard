@@ -109,3 +109,63 @@
 - **Resolution:** `ml/scripts/prepare_audio_clips.py` trims silence, then high-pass → mono → compressor → two-pass loudnorm → 48 kHz. ffmpeg comes from the `imageio-ffmpeg` wheel (no system install needed on Windows). Trimming the leading silence alone saves about 1 s of H2 siren latency.
 - **Status:** active
 
+### [domain] A baseline diff can't tell "added" from "taken away"
+- **Observed:** 2026-11-26, synthetic scenes written while preparing the demo rehearsal.
+- **Evidence:** before the fix, picking up something already lying in the zone, and picking up a dumped bag after the cooldown, both played the WARNING clip.
+- **Resolution:** compare edge strength along the changed region's border. Much stronger before (`removed_object_edge_ratio` 1.4) means a removal: no incident, and the baseline absorbs the new view. Unproven on real, rubble-strewn ground; watch for it in J3 and turn failures into fixtures.
+- **Status:** active
+
+### [domain] An actor hiding the object must not end the event
+- **Observed:** 2026-11-26, synthetic scenes.
+- **Evidence:** with the wait capped at 3 s instead of 30 s, both occlusion scenarios fail: the diff sees "nothing new" while the dumper stands in front of the bag just outside the zone.
+- **Resolution:** while live boxes hide part of the zone, "no blobs" is not trusted and a hidden candidate doesn't count as missing (`max_occluded_wait`). Settling also ignores motion from actors who already left.
+- **Status:** active
+
+### [ml][litert] Ultralytics LiteRT detect export normalises box coordinates by the input size
+- **Observed:** 2026-11-26, Ultralytics 8.4.216 source (`utils/export/engine.py` `_NormalizeCoords`, `nn/backends/litert.py`).
+- **Evidence:** the raw head `[1, 84, N]` holds `cx, cy, w, h` in 0..1 of the model input (not pixels), channels first; class scores already have the sigmoid. `N` = 3549 at 416 px.
+- **Resolution:** `YoloDecoder` assumes this and `models.json` records it. The on-device golden test (`DetectorGoldenTest`) must pass before trusting it.
+- **Status:** active — needs device verification
+
+### [tooling] Publishing a GitHub release from the agent was blocked
+- **Observed:** 2026-11-26. `gh release create models-v1 …` (model assets for P2.2) was denied by the Claude Code auto-mode permission check.
+- **Resolution:** don't work around it. The owner has to approve it. Until the release exists, builds need `-PlitterguardModelsDir=ml/weights/litert` and CI can't build the app.
+- **Status:** active
+
+### [tooling] Long Bash heredocs with apostrophes fail to parse
+- **Observed:** 2026-11-26, twice: "unexpected EOF while looking for matching quote", and none of the command ran.
+- **Resolution:** write multi-file edits as a script with the Write tool, then run it.
+- **Status:** active
+
+### [build] A first full compile can exceed 10 minutes on the dev PC
+- **Observed:** 2026-11-26: `compileDebugKotlin` took 577 s while the IDE's Gradle sync was also running.
+- **Resolution:** run full builds in the background.
+- **Status:** active
+
+### [domain][camera] A ground-level dump zone cuts people off in the detector crop
+- **Observed:** 2026-11-26, code review before the first device run.
+- **Evidence:** with only the 10% `roi_crop_margin`, a zone whose top edge is at 0.30 gave a crop starting at 0.235; a person standing at that edge would lose head and torso.
+- **Resolution:** `roi_crop_headroom` (0.40 of frame height) extends the crop upward. Check on the device whether people are found near and far.
+- **Status:** active — needs device verification
+
+### [domain] A still bystander overlapping the zone stopped the baseline forever
+- **Observed:** 2026-11-26. A synthetic scene with a motionless person just outside the zone gave no baseline, so no dumping was ever detected.
+- **Resolution:** out-of-zone tracks still for `scenery_after` (10 s) no longer block the quiet refresh.
+- **Status:** active
+
+### [camera][fgs] Following display rotation breaks the zone while the app is in the background
+- **Observed:** 2026-11-26, code review (not yet reproduced on a device).
+- **Resolution:** `MountRotation` follows only ROTATION_90/270; the lock screen or a portrait app can't turn the frames. `unbindAll()` before each bind avoids two camera sessions overlapping.
+- **Status:** active — needs device verification
+
+### [build][litert] litert-api drags in proprietary Play delivery libraries
+- **Observed:** 2026-11-26, `:app:dependencyInsight`.
+- **Evidence:** `litert-api:2.4.0` → `com.google.android.play:ai-delivery:0.1.1-alpha01` → `asset-delivery:2.3.0` (it also adds a disabled dataSync service). LICENSE-EXCEPTIONS covers only `com.google.mlkit` and `com.google.android.gms`. Present since the Phase 0 scaffold.
+- **Resolution:** open question in STATUS. Excluding it needs a device test, because LiteRT may reference those classes.
+- **Status:** active
+
+### [build] Lambdas written in a build script break the configuration cache
+- **Observed:** 2026-11-26: "cannot serialize Gradle script object references" for `fetchModels`.
+- **Resolution:** register such tasks from build-logic (`registerFetchModels()`).
+- **Status:** active
+
