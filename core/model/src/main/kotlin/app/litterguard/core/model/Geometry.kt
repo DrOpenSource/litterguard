@@ -40,6 +40,12 @@ data class BoundingBox(
     /** Ground-contact point of an upright actor; used to decide whether an actor stands inside the ROI. */
     val bottomCenter: NormalizedPoint get() = NormalizedPoint((left + right) / 2f, bottom)
 
+    /** Whether the point ([x], [y]) lies inside this box; the edges count as inside. */
+    fun covers(
+        x: Float,
+        y: Float,
+    ): Boolean = x in left..right && y in top..bottom
+
     fun intersectionArea(other: BoundingBox): Float {
         val w = min(right, other.right) - max(left, other.left)
         val h = min(bottom, other.bottom) - max(top, other.top)

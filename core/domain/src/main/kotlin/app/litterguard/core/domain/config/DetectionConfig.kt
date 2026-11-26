@@ -22,10 +22,32 @@ data class DetectionConfig(
     val actorEnterFrames: Int = 2,
     /** Consecutive missing frames before an actor counts as "left" (hysteresis). */
     val actorExitFrames: Int = 3,
+    /** Overlap with its previous box that lets a detection continue a track. */
+    val trackMatchIou: Float = 0.2f,
+    /** Without overlap, how far (in box sizes) a detection may move and still continue a same-category track. */
+    val trackMatchReach: Float = 1.0f,
+    /** A track whose box keeps at least this overlap with where it stopped counts as standing still. */
+    val trackStationaryIou: Float = 0.8f,
     /** Quiet time after the last actor leaves before comparing against the baseline. */
     val settleTime: Duration = 1.seconds,
     /** Smallest new-object blob, as a share of the **whole frame** area. */
     val objectMinFrameFraction: Float = 0.0015f,
+    /** Luma change from the baseline that marks a cell as "different" (after brightness normalisation). */
+    val objectLumaThreshold: Int = 30,
+    /** Change in edge strength that marks a new or hidden outline. */
+    val objectEdgeThreshold: Int = 24,
+    /** Share of a blob's cells that must show changed edges; rejects soft shadows and patches of light. */
+    val objectMinEdgeSupport: Float = 0.05f,
+    /** A blob with more than this share of its cells under a live actor or animal box is ignored. */
+    val actorOverlapDiscardFraction: Float = 0.30f,
+    /** Quiet-zone snapshots whose per-cell median forms the baseline. */
+    val baselineHistory: Int = 3,
+    /** Longest wait for motion to stop after the last actor leaves, so swaying leaves can't stall the decision. */
+    val maxSettleWait: Duration = 3.seconds,
+    /** Longest wait while a person or vehicle blocks the view of where something may have been left. */
+    val maxOccludedWait: Duration = 30.seconds,
+    /** Frames a candidate object may be missing (noise, someone passing in front) before it is dropped. */
+    val candidateMissTolerance: Int = 2,
     /** How long a new object must stay static before dumping is confirmed. */
     val dwellTime: Duration = 5.seconds,
     /** IoU a candidate blob must keep with its first appearance to count as static. */
@@ -40,6 +62,8 @@ data class DetectionConfig(
     val parkedActorTimeout: Duration = 180.seconds,
     /** Best analysis frames kept per vehicle track for evidence. */
     val evidenceFramesPerTrack: Int = 3,
+    /** Kept evidence pictures are at least this far apart in time, so they don't all show the same moment. */
+    val evidenceMinSpacing: Duration = 1.seconds,
     /** Speculative high-resolution captures allowed per vehicle track. */
     val speculativeCapturesPerTrack: Int = 2,
     /** Margin added around the ROI bounds for ROI-crop inference, as a share of the ROI's width/height. */
@@ -54,15 +78,27 @@ data class DetectionConfig(
         requireFraction(actorMinConfidence, "actorMinConfidence")
         require(actorEnterFrames >= 1) { "actorEnterFrames must be >= 1" }
         require(actorExitFrames >= 1) { "actorExitFrames must be >= 1" }
+        requireFraction(trackMatchIou, "trackMatchIou")
+        require(trackMatchReach >= 0f) { "trackMatchReach must not be negative" }
+        requireFraction(trackStationaryIou, "trackStationaryIou")
         require(!settleTime.isNegative()) { "settleTime must not be negative" }
         requireFraction(objectMinFrameFraction, "objectMinFrameFraction")
         require(dwellTime.isPositive()) { "dwellTime must be positive" }
         requireFraction(objectStabilityIou, "objectStabilityIou")
         requireFraction(illuminationAbortFraction, "illuminationAbortFraction")
+        require(objectLumaThreshold in 1..MAX_LUMA) { "objectLumaThreshold must be in 1..$MAX_LUMA" }
+        require(objectEdgeThreshold >= 1) { "objectEdgeThreshold must be >= 1" }
+        requireFraction(objectMinEdgeSupport, "objectMinEdgeSupport")
+        requireFraction(actorOverlapDiscardFraction, "actorOverlapDiscardFraction")
+        require(baselineHistory >= 1) { "baselineHistory must be >= 1" }
+        require(maxSettleWait >= settleTime) { "maxSettleWait must be at least settleTime" }
+        require(maxOccludedWait >= maxSettleWait) { "maxOccludedWait must be at least maxSettleWait" }
+        require(candidateMissTolerance >= 0) { "candidateMissTolerance must be >= 0" }
         require(!cooldown.isNegative()) { "cooldown must not be negative" }
         require(baselineRefresh.isPositive()) { "baselineRefresh must be positive" }
         require(parkedActorTimeout > dwellTime) { "parkedActorTimeout must exceed dwellTime" }
         require(evidenceFramesPerTrack >= 1) { "evidenceFramesPerTrack must be >= 1" }
+        require(!evidenceMinSpacing.isNegative()) { "evidenceMinSpacing must not be negative" }
         require(speculativeCapturesPerTrack >= 0) { "speculativeCapturesPerTrack must be >= 0" }
         require(roiCropMargin in 0f..1f) { "roiCropMargin must be in [0, 1]" }
     }

@@ -28,14 +28,14 @@ Update the **Done** column when ticking boxes.
 | Phase | Goal | Done / Total | Status | Exit gate |
 | --- | --- | --- | --- | --- |
 | [P0](#phase-0--foundation) | Foundation, decisions, device baseline | 10 / 12 | 🟡 In progress | CI green; G54 benchmark decides model size and accelerator |
-| [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 3 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
+| [P1](#phase-1--domain-core-jvm-no-device) | All decision logic, pure Kotlin, replay-tested | 9 / 15 | 🟡 In progress | Synthetic J2/J3 scenarios pass; ≥ 90% domain coverage |
 | [P2](#phase-2--walking-skeleton-on-the-moto-g54-slice-1) | End-to-end loop on the phone (slice 1) | 0 / 15 | ⚪ | Foot-drop → siren < 8 s → Telegram photo; J1 < 3 min |
 | [P3](#phase-3--evidence-and-anpr) | Evidence buffer, high-res capture, plates | 0 / 12 | ⚪ | H3 measured (≥ 70% human-readable plates in good light) |
 | [P4](#phase-4--reliability-and-device-hardening) | Thermal, kiosk, recovery, endurance | 0 / 14 | ⚪ | J5, J6, J7 pass on the G54 |
 | [P5](#phase-5--review-export-and-field-data-loop) | Human review, export, replay fixtures from the field | 0 / 7 | ⚪ | J4 passes; ≥ 10 real-site replay fixtures |
 | [P6](#phase-6--custom-models-and-tuning) | Fine-tuned models, plate OCR A/B, tuning | 0 / 10 | ⚪ | Custom detector beats stock on field validation set |
 | [P7](#phase-7--field-validation-and-mvp-release) | Full journeys at the site, pilot, v1.0 release | 0 / 6 | ⚪ | PRD §12 exit criteria met → tag `v1.0.0` |
-| **Total** | | **13 / 91** | | |
+| **Total** | | **19 / 91** | | |
 
 ## Tracks and critical path
 
@@ -90,29 +90,32 @@ Start **P3.4 during Phase 2**; it only depends on public datasets.
 - [x] **P1.3** ROI geometry. Covers `FR-1.2 FR-1.3 FR-2.4`. · S · after: P1.1
   - Scope: point-in-polygon (edge counts as inside), self-intersection check, polygon bounds, normalised↔pixel mapping with rotation, and the ROI-crop rectangle with margin.
   - Done when: table-driven tests pass, covering concave, degenerate and edge cases. ✔ 36 tests, 2026-11-21
-- [ ] **P1.4** `MotionGate`: downscale the ROI luma, per-pixel diff threshold, changed-fraction score. Covers `FR-2.2`. · S · after: P1.3
-- [ ] **P1.5** `Tracker`. Covers `FR-2.5`. · M · after: P1.1
+- [x] **P1.4** `MotionGate`: downscale the ROI luma, per-pixel diff threshold, changed-fraction score. Covers `FR-2.2`. · S · after: P1.3
+- [x] **P1.5** `Tracker`. Covers `FR-2.5`. · M · after: P1.1
   - Scope: IoU association with a centroid fallback, enter/exit hysteresis, in-ROI test by bottom-centre, a per-track static-duration counter, and class smoothing.
   - Done when: tests cover crossing tracks, occlusion gaps of 1–2 frames, and parked vehicles.
-- [ ] **P1.6** `BaselineModel`. Covers `FR-2.6`, PRD §6.2. · L · after: P1.3
+- [x] **P1.6** `BaselineModel`. Covers `FR-2.6`, PRD §6.2. · L · after: P1.3
   - Scope: rolling-median refresh, freeze/unfreeze, brightness normalisation, gradient + luma diff, morphology, connected components, min area, actor-overlap exclusion, illumination abort, and absorbing an object into the baseline.
   - Done when: synthetic luma tests pass for a new blob, a global brightness change, a shadow edge, and camera shake.
-- [ ] **P1.7** `DumpingStateMachine`: pure `(state, observation, config, now) → (state', effects)`. Covers `FR-3.1–3.5`. · M · after: P1.5, P1.6
+- [x] **P1.7** `DumpingStateMachine`: pure `(state, observation, config, now) → (state', effects)`. Covers `FR-3.1–3.5`. · M · after: P1.5, P1.6
   - Scope: all PRD §6.3 transitions, animal exclusion, `UNATTRIBUTED_OBJECT`, `INCONCLUSIVE`, merging within cooldown, the parked-actor timeout, and the pre-warning flag (**default off**, D2).
   - Done when: a transition-table test covers every (state, input) pair.
 - [ ] **P1.8** `EvidencePolicy`. Covers `FR-5.1 FR-5.2`. · S · after: P1.5
   - Scope: Laplacian-variance sharpness on luma, top-K scoring (area × sharpness × centrality), speculative-capture decisions (≤ 2 per track), and the 2-minute expiry.
+  - Partial 2026-11-26: sharpness, scoring, a top-K buffer per visit (not yet per track) and the parked-actor rule are done. Speculative captures and expiry move with P3.2.
 - [ ] **P1.9** `PlateSanitizer`. Covers `FR-5.5 FR-5.6 FR-5.7`. · S
   - Scope: normalise, merge two-line plates, positional confusion correction, the standard and BH regexes, a score, and best-of-K selection.
   - Done when: a table-driven test with ≥ 40 cases (real-world formats, OCR noise) passes.
 - [ ] **P1.10** Ports (ARCHITECTURE §3), plus fakes in `testFixtures`: `FakeClock`, `FakeObjectDetector`, `InMemoryIncidentRepository`, and so on. · S · after: P1.1
-- [ ] **P1.11** `DecisionPipeline` facade: one `Observation` in → motion → tracker → baseline → state machine → evidence policy → effects out. Pure and deterministic. · S · after: P1.4–P1.8
+  - Partial 2026-11-26: the ports needed for Phase 2 exist; the shared fakes are still to do. Plate ports arrive with P3.
+- [x] **P1.11** `DecisionPipeline` facade: one `Observation` in → motion → tracker → baseline → state machine → evidence policy → effects out. Pure and deterministic. · S · after: P1.4–P1.8
 - [ ] **P1.12** Scenario replay harness. · M · after: P1.11
   - Scope: a JSONL observation format (timestamp, detections, luma reference), a synthetic scene generator (luma planes with moving boxes and dropped blobs), and a runner with an assertion DSL (`expectIncident(at = 12.3.s ± 1.s)`, `expectNoAlert()`).
-- [ ] **P1.13** Synthetic acceptance scenarios. · M · after: P1.12
+  - Partial 2026-11-26: the scene generator and runner exist (`core/domain/src/test/.../scenario/`). The JSONL format waits for real recordings (P5.4).
+- [x] **P1.13** Synthetic acceptance scenarios. · M · after: P1.12
   - J2 cases: on foot, scooter, car.
   - J3 cases: walk through carrying a bag, stop briefly with a bag, dog, cow, cloud/lighting change, return for the bag, a parked car leaving, someone lingering in the ROI.
-  - Done when: all of them behave per the PRD, and the modelled trigger latency is ≤ 6.8 s.
+  - Done when: all of them behave per the PRD, and the modelled trigger latency is ≤ 6.8 s. ✔ 2026-11-26 (synthetic scenes only; the real-site proof is P2.14 and P7.2)
 - [ ] **P1.14** Kover coverage report and threshold (≥ 90% lines for `:core:domain`) wired into the gate. · S
 - [ ] **P1.R** Phase review. · S
 
