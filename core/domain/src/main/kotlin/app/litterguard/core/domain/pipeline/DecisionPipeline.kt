@@ -91,8 +91,7 @@ class DecisionPipeline(
             if (effect is Effect.BaselineEffect) apply(effect, luma, now) else external += effect
         }
 
-        val nobodyNearby = tracks.none { it.box.intersectionArea(zoneBounds) > 0f }
-        if (state.phase == Phase.Idle && !motion.isMotion && nobodyNearby) baseline.offerQuiet(luma, now)
+        if (state.phase == Phase.Idle && !motion.isMotion && isQuietAround(tracks)) baseline.offerQuiet(luma, now)
 
         return PipelineStep(
             effects = external,
@@ -109,6 +108,15 @@ class DecisionPipeline(
                 ),
         )
     }
+
+    /**
+     * Whether nothing near the zone could still be about to change it. Someone who has long stood still outside it
+     * is scenery: waiting for them to leave could mean never learning what the empty zone looks like.
+     */
+    private fun isQuietAround(tracks: List<Track>): Boolean =
+        tracks.none {
+            it.box.intersectionArea(zoneBounds) > 0f && (it.inZone || it.stationaryFor < config.sceneryAfter)
+        }
 
     /** Where people and vehicles that are no longer in the zone are now, and were a frame ago. */
     private fun departedBoxes(tracks: List<Track>): List<BoundingBox> {

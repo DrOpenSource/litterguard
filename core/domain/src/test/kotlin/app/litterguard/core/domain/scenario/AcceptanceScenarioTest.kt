@@ -299,6 +299,93 @@ class AcceptanceScenarioTest {
             assertSilent(scene.run(seconds = 62.0))
         }
 
+    @Test
+    fun `picking up something that was already lying there is not dumping`() =
+        runTest {
+            val scene =
+                SyntheticScene(
+                    listOf(
+                        bag(0.50f, 0.80f, from = 0.0, until = 7.0),
+                        person(
+                            Key(3.0, 0.02f, 0.80f),
+                            Key(6.0, 0.50f, 0.80f),
+                            Key(7.5, 0.50f, 0.80f),
+                            Key(11.0, 0.98f, 0.80f),
+                        ),
+                    ),
+                )
+
+            val result = scene.run(seconds = 30.0)
+
+            assertSilent(result)
+            assertThat(result.incidents).isEmpty()
+        }
+
+    @Test
+    fun `taking the dumped bag away after the cooldown stays silent`() =
+        runTest {
+            val scene =
+                SyntheticScene(
+                    listOf(
+                        person(Key(3.0, 0.02f, 0.80f), Key(5.0, 0.50f, 0.80f), Key(7.0, 0.98f, 0.80f)),
+                        bag(0.50f, 0.80f, from = 5.0, until = 82.0),
+                        person(
+                            Key(80.0, 0.02f, 0.80f),
+                            Key(81.5, 0.50f, 0.80f),
+                            Key(82.5, 0.50f, 0.80f),
+                            Key(86.0, 0.98f, 0.80f),
+                        ),
+                    ),
+                )
+
+            val result = scene.run(seconds = 105.0)
+
+            assertThat(result.sirens).hasSize(1)
+            assertThat(result.incidents).hasSize(1)
+        }
+
+    @Test
+    fun `dumping in the same spot right after something was taken away is still caught`() =
+        runTest {
+            val scene =
+                SyntheticScene(
+                    listOf(
+                        bag(0.50f, 0.80f, from = 0.0, until = 6.0),
+                        person(
+                            Key(3.0, 0.02f, 0.80f),
+                            Key(5.5, 0.50f, 0.80f),
+                            Key(6.5, 0.50f, 0.80f),
+                            Key(9.0, 0.98f, 0.80f),
+                        ),
+                        person(Key(20.0, 0.02f, 0.80f), Key(22.0, 0.50f, 0.80f), Key(24.0, 0.98f, 0.80f)),
+                        bag(0.50f, 0.80f, from = 22.0),
+                    ),
+                )
+
+            val result = scene.run(seconds = 42.0)
+
+            assertThat(result.sirens).hasSize(1)
+            assertThat(result.sirens.single().time).isGreaterThan(22.0)
+        }
+
+    @Test
+    fun `someone standing still beside the zone from the start does not stop it watching`() =
+        runTest {
+            val scene =
+                SyntheticScene(
+                    listOf(
+                        // Feet below the zone, but their body overlaps it in the picture, for the whole run.
+                        person(Key(0.0, 0.26f, 0.99f), Key(45.0, 0.26f, 0.99f)),
+                        person(Key(18.0, 0.98f, 0.80f), Key(21.0, 0.60f, 0.80f), Key(24.0, 0.98f, 0.80f)),
+                        bag(0.60f, 0.80f, from = 21.0),
+                    ),
+                )
+
+            val result = scene.run(seconds = 40.0)
+
+            assertThat(result.sirens).hasSize(1)
+        }
+
     // Other PRD behaviour.
 
     @Test

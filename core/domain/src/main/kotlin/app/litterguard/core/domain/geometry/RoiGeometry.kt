@@ -65,9 +65,16 @@ val Polygon.isSimple: Boolean
 
 /**
  * The region the detector should see for ROI-crop inference (ARCHITECTURE §4): the ROI bounds grown by [margin]
- * (a share of the ROI's own width/height) and clamped to the frame.
+ * (a share of the ROI's own width/height), reaching at least [headroom] (a share of the frame height) above the
+ * ROI so that people standing in it fit, and clamped to the frame.
  */
-fun Polygon.cropRect(margin: Float): BoundingBox = bounds.expandedBy(margin).clampToUnit()
+fun Polygon.cropRect(
+    margin: Float,
+    headroom: Float = 0f,
+): BoundingBox {
+    val grown = bounds.expandedBy(margin)
+    return grown.copy(top = minOf(grown.top, bounds.top - headroom)).clampToUnit()
+}
 
 private fun cross(
     o: NormalizedPoint,

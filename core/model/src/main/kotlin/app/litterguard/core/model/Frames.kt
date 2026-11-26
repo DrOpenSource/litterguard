@@ -78,4 +78,13 @@ class ImageBuffer(
 
     /** A tightly packed deep copy, safe to retain. */
     fun copy(): ImageBuffer = ImageBuffer(width, height, pixels.copyOf(width * height))
+
+    /** A new image keeping every [factor]-th pixel in both directions: cheap, and good enough for previews. */
+    fun downscaled(factor: Int): ImageBuffer {
+        require(factor >= 1) { "factor must be >= 1" }
+        val newWidth = maxOf(1, width / factor)
+        val newHeight = maxOf(1, height / factor)
+        val out = IntArray(newWidth * newHeight) { this[(it % newWidth) * factor, (it / newWidth) * factor] }
+        return ImageBuffer(newWidth, newHeight, out)
+    }
 }

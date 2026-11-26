@@ -38,6 +38,11 @@ data class DetectionConfig(
     val objectEdgeThreshold: Int = 24,
     /** Share of a blob's cells that must show changed edges; rejects soft shadows and patches of light. */
     val objectMinEdgeSupport: Float = 0.05f,
+    /**
+     * A changed region whose outline was this much stronger **before** than now is something that was taken
+     * away, not left behind.
+     */
+    val removedObjectEdgeRatio: Float = 1.4f,
     /** A blob with more than this share of its cells under a live actor or animal box is ignored. */
     val actorOverlapDiscardFraction: Float = 0.30f,
     /** Quiet-zone snapshots whose per-cell median forms the baseline. */
@@ -68,6 +73,16 @@ data class DetectionConfig(
     val speculativeCapturesPerTrack: Int = 2,
     /** Margin added around the ROI bounds for ROI-crop inference, as a share of the ROI's width/height. */
     val roiCropMargin: Float = 0.10f,
+    /**
+     * How far above the zone's top edge the detector also looks, as a share of the **frame** height. The zone is
+     * drawn on the ground and people stand up from it, so without this their upper bodies would be cut off.
+     */
+    val roiCropHeadroom: Float = 0.40f,
+    /**
+     * Someone standing still **outside** the zone this long counts as scenery when the baseline refreshes, so a
+     * bystander can't stop the app from ever learning what the empty zone looks like.
+     */
+    val sceneryAfter: Duration = 10.seconds,
     /** Play the "area under surveillance" notice while an actor is present (FR-3.5). Off by owner decision D2. */
     val preWarningEnabled: Boolean = false,
 ) {
@@ -89,6 +104,7 @@ data class DetectionConfig(
         require(objectLumaThreshold in 1..MAX_LUMA) { "objectLumaThreshold must be in 1..$MAX_LUMA" }
         require(objectEdgeThreshold >= 1) { "objectEdgeThreshold must be >= 1" }
         requireFraction(objectMinEdgeSupport, "objectMinEdgeSupport")
+        require(removedObjectEdgeRatio >= 1f) { "removedObjectEdgeRatio must be at least 1" }
         requireFraction(actorOverlapDiscardFraction, "actorOverlapDiscardFraction")
         require(baselineHistory >= 1) { "baselineHistory must be >= 1" }
         require(maxSettleWait >= settleTime) { "maxSettleWait must be at least settleTime" }
@@ -101,6 +117,8 @@ data class DetectionConfig(
         require(!evidenceMinSpacing.isNegative()) { "evidenceMinSpacing must not be negative" }
         require(speculativeCapturesPerTrack >= 0) { "speculativeCapturesPerTrack must be >= 0" }
         require(roiCropMargin in 0f..1f) { "roiCropMargin must be in [0, 1]" }
+        require(roiCropHeadroom in 0f..1f) { "roiCropHeadroom must be in [0, 1]" }
+        require(sceneryAfter.isPositive()) { "sceneryAfter must be positive" }
     }
 
     /**

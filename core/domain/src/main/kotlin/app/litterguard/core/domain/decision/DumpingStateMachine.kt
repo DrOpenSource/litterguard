@@ -160,6 +160,9 @@ class DumpingStateMachine(
             // "Nothing there" can't be trusted while someone is blocking the view.
             diff.isViewBlocked(now - phase.since) -> state.moveTo(phase)
 
+            // Someone took something away: that is the new normal, or the old picture would keep disagreeing.
+            diff.somethingRemoved -> state.moveTo(Phase.Idle, Effect.AbsorbIntoBaseline, Effect.DiscardEvidence)
+
             else -> endVisit(state)
         }
 

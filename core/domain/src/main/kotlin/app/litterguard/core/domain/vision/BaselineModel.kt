@@ -24,12 +24,14 @@ sealed interface BaselineDiff {
      * @property blobs candidate objects, largest first.
      * @property occluders boxes of live people, vehicles and animals that were hiding part of the picture.
      * @property hiddenFraction share of the zone hidden by [occluders].
+     * @property somethingRemoved a region changed because something was taken away. It is not listed in [blobs].
      */
     data class Compared(
         val changedFraction: Float,
         val blobs: List<Blob>,
         val occluders: List<BoundingBox> = emptyList(),
         val hiddenFraction: Float = 0f,
+        val somethingRemoved: Boolean = false,
     ) : BaselineDiff
 }
 
@@ -131,10 +133,13 @@ class BaselineModel(
         }
         val changedFraction = if (visible == 0) 0f else visibleChanged.toFloat() / visible
 
-        val blobs =
+        val candidates =
             GridOps
                 .components(changed, raster.width, raster.height)
                 .filter { isCandidate(it, edgeChanged, hidden) }
+        val (removed, added) = candidates.partition { wasTakenAway(it, edgesBefore, edgesNow) }
+        val blobs =
+            added
                 .map { component ->
                     Blob(
                         box = raster.cellRangeBox(component.minX, component.minY, component.maxX, component.maxY),
@@ -143,7 +148,25 @@ class BaselineModel(
                 }.sortedByDescending { it.frameFraction }
         val hiddenCount = changed.indices.count { raster.mask[it] && hidden[it] }
         val hiddenFraction = if (raster.maskCount == 0) 0f else hiddenCount.toFloat() / raster.maskCount
-        return BaselineDiff.Compared(changedFraction, blobs, occupied, hiddenFraction)
+        return BaselineDiff.Compared(changedFraction, blobs, occupied, hiddenFraction, removed.isNotEmpty())
+    }
+
+    /**
+     * Adding an object draws a new outline around it; taking one away erases the outline it had. So compare how
+     * strong the edges along the region's border were before with how strong they are now.
+     */
+    private fun wasTakenAway(
+        component: GridOps.Component,
+        edgesBefore: IntArray,
+        edgesNow: IntArray,
+    ): Boolean {
+        var before = 0L
+        var now = 0L
+        for (cell in GridOps.border(component, raster.width, raster.height)) {
+            before += edgesBefore[cell]
+            now += edgesNow[cell]
+        }
+        return before > now * config.removedObjectEdgeRatio
     }
 
     private fun isCandidate(
